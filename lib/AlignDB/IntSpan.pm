@@ -6,7 +6,7 @@ use strict;
 use warnings;
 use Carp;
 
-use Scalar::Util qw(looks_like_number);
+use Scalar::Util qw(looks_like_number blessed);
 use Readonly;
 
 use overload (
@@ -22,8 +22,8 @@ use overload (
 
 =cut
 
-Readonly my $POS_INF => 2_147_483_647;     # 2**31-1
-Readonly my $NEG_INF => -2_147_483_647;    # -(2**31-1)
+Readonly my $POS_INF => 2_147_483_647 - 1;             # INT_MAX - 1
+Readonly my $NEG_INF => ( -2_147_483_647 - 1 ) + 1;    # INT_MIN + 1
 
 =method POS_INF
 
@@ -109,7 +109,7 @@ sub clear {
 
 =method B<INTERFACE: Set contents>
 
-=method edges
+=method edges_ref
 
 Return the internal used ArrayRef representing the set.
 
@@ -117,9 +117,22 @@ I don't think you should use this method.
 
 =cut
 
-sub edges {
+sub edges_ref {
     my $self = shift;
     return $self->{edges};
+}
+
+=method edges
+
+Return the internal used Array representing the set.
+
+I don't think you should use this method.
+
+=cut
+
+sub edges {
+    my $self = shift;
+    return @{ $self->edges_ref };
 }
 
 =method edge_size
@@ -130,7 +143,7 @@ Return the number of edges
 
 sub edge_size {
     my $self = shift;
-    return scalar @{ $self->edges };
+    return scalar $self->edges;
 }
 
 =method span_size
@@ -158,11 +171,10 @@ sub as_string {
     }
 
     my @runs;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
         push @runs, $lower == $upper ? $lower : "$lower-$upper";
     }
 
@@ -179,11 +191,10 @@ sub as_array {
     my $self = shift;
 
     my @elements;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
         push @elements, ( $lower .. $upper );
     }
 
@@ -202,8 +213,7 @@ sub ranges {
     my $self = shift;
 
     my @ranges;
-
-    my @edges = @{ $self->edges };
+    my @edges = $self->edges;
     while (@edges) {
         my $lower = shift @edges;
         my $upper = shift(@edges) - 1;
@@ -223,11 +233,10 @@ sub spans {
     my $self = shift;
 
     my @spans;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
         push @spans, [ $lower, $upper ];
     }
 
@@ -245,12 +254,11 @@ sub sets {
     my $self = shift;
 
     my @sets;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
-        push @sets, __PACKAGE__->new("$lower-$upper");
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
+        push @sets, blessed($self)->new("$lower-$upper");
     }
 
     return @sets;
@@ -270,11 +278,10 @@ sub runlists {
     }
 
     my @runlists;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower  = shift @edges;
-        my $upper  = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower  = shift @ranges;
+        my $upper  = shift @ranges;
         my $string = $lower == $upper ? $lower : $lower . '-' . $upper;
         push @runlists, $string;
     }
@@ -294,11 +301,10 @@ sub cardinality {
     my $self = shift;
 
     my $cardinality = 0;
-
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
+    my @ranges      = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
         $cardinality += $upper - $lower + 1;
     }
 
@@ -335,10 +341,8 @@ Return true if the set is negtive infinite.
 =cut
 
 sub is_neg_inf {
-    my $self  = shift;
-    my $edges = $self->edges;
-
-    return $edges->[0] == $NEG_INF;
+    my $self = shift;
+    return $self->edges_ref->[0] == $NEG_INF;
 }
 
 =method is_pos_inf
@@ -348,10 +352,8 @@ Return true if the set is positive infinite.
 =cut
 
 sub is_pos_inf {
-    my $self  = shift;
-    my $edges = $self->edges;
-
-    return $edges->[-1] == $POS_INF;
+    my $self = shift;
+    return $self->edges_ref->[-1] == $POS_INF;
 }
 
 =method is_infinite
@@ -362,7 +364,6 @@ Return true if the set is infinite.
 
 sub is_infinite {
     my $self = shift;
-
     return $self->is_neg_inf or $self->is_pos_inf;
 }
 
@@ -374,7 +375,6 @@ Return true if the set is finite.
 
 sub is_finite {
     my $self = shift;
-
     return !$self->is_infinite;
 }
 
@@ -386,7 +386,6 @@ Return true if the set contains all integers.
 
 sub is_universal {
     my $self = shift;
-
     return $self->edge_size == 2 and $self->is_neg_inf and $self->is_pos_inf;
 }
 
@@ -402,7 +401,7 @@ sub contains_all {
     my $self = shift;
 
     for my $i (@_) {
-        my $pos = $self->_find_pos( $i + 1 );
+        my $pos = $self->_find_pos( $i + 1, 0 );
         return 0 unless $pos & 1;
     }
 
@@ -419,7 +418,7 @@ sub contains_any {
     my $self = shift;
 
     for my $i (@_) {
-        my $pos = $self->_find_pos( $i + 1 );
+        my $pos = $self->_find_pos( $i + 1, 0 );
         return 1 if $pos & 1;
     }
 
@@ -427,6 +426,48 @@ sub contains_any {
 }
 
 =method B<INTERFACE: Member operations>
+
+=cut
+
+=method add_pair
+
+    $set->add_pair($lower, $upper);
+    
+Add a pair of inclusive integers to the set.
+
+A pair of arguments constitute a range
+
+=cut
+
+sub add_pair {
+    my $self   = shift;
+    my @ranges = @_;
+
+    if ( scalar(@ranges) != 2 ) {
+        confess "Number of ranges must be two: @ranges\n";
+    }
+
+    my $edges_ref = $self->edges_ref;
+
+    my $from = shift @ranges;
+    my $to   = shift(@ranges) + 1;
+    if ( $from > $to ) {
+        confess "Bad order: $from-$to\n";
+    }
+    my $from_pos = $self->_find_pos( $from,   0 );
+    my $to_pos   = $self->_find_pos( $to + 1, $from_pos );
+
+    if ( $from_pos & 1 ) {
+        $from = $edges_ref->[ --$from_pos ];
+    }
+    if ( $to_pos & 1 ) {
+        $to = $edges_ref->[ $to_pos++ ];
+    }
+
+    splice @{$edges_ref}, $from_pos, $to_pos - $from_pos, ( $from, $to );
+
+    return $self;
+}
 
 =method add_range
 
@@ -446,26 +487,28 @@ sub add_range {
         confess "Number of ranges must be even: @ranges\n";
     }
 
-    my $edges = $self->edges;
-
     while (@ranges) {
         my $from = shift @ranges;
-        my $to   = shift(@ranges) + 1;
-        if ( $from > $to ) {
-            confess "Bad order: $from-$to\n";
-        }
-        my $from_pos = $self->_find_pos($from);
-        my $to_pos = $self->_find_pos( $to + 1, $from_pos );
-
-        if ( $from_pos & 1 ) {
-            $from = $edges->[ --$from_pos ];
-        }
-        if ( $to_pos & 1 ) {
-            $to = $edges->[ $to_pos++ ];
-        }
-
-        splice @$edges, $from_pos, $to_pos - $from_pos, ( $from, $to );
+        my $to   = shift @ranges;
+        $self->add_pair( $from, $to );
     }
+
+    return $self;
+}
+
+=method add_runlist
+
+    $set->add_runlist($runlist);
+
+Add the specified runlist to the set.
+
+=cut
+
+sub add_runlist {
+    my $self  = shift;
+    my $first = shift;
+
+    $self->add_range( $self->_runlist_to_ranges($first) );
 
     return $self;
 }
@@ -483,7 +526,7 @@ sub add {
     my $self  = shift;
     my $first = shift;
 
-    if ( ref $first eq __PACKAGE__ ) {
+    if ( ref $first eq ref $self ) {
         $self->add_range( $first->ranges );
     }
     elsif ( _is_int($first) ) {
@@ -491,7 +534,7 @@ sub add {
             $self->add_range( $self->_list_to_ranges( $first, @_ ) );
         }
         else {
-            $self->add_range( $first, $first );
+            $self->add_pair( $first, $first );
         }
     }
     else {
@@ -518,9 +561,9 @@ As noted above $NEG_INF and $POS_INF are actually just big integers.
 sub invert {
     my $self = shift;
 
-    # $edges is an ArrayRef, which points to the same array as the
-    #   'edges' attribute. So manipulate $edges affects the attribute
-    my $edges = $self->edges;
+    # $edges_ref is an ArrayRef, which points to the same array as the
+    #   'edges' attribute. So manipulate $edges_ref affects the attribute
+    my $edges_ref = $self->edges_ref;
 
     if ( $self->is_empty ) {
         $self->{edges} = [ $NEG_INF, $POS_INF ];    # Universal set
@@ -529,18 +572,18 @@ sub invert {
 
         # Either add or remove infinity from each end. The net
         # effect is always an even number of additions and deletions
-        if ( $edges->[0] == $NEG_INF ) {
-            shift @{$edges};
+        if ( $edges_ref->[0] == $NEG_INF ) {
+            shift @{$edges_ref};
         }
         else {
-            unshift @{$edges}, $NEG_INF;
+            unshift @{$edges_ref}, $NEG_INF;
         }
 
-        if ( $edges->[-1] == $POS_INF ) {
-            pop @{$edges};
+        if ( $edges_ref->[-1] == $POS_INF ) {
+            pop @{$edges_ref};
         }
         else {
-            push @{$edges}, $POS_INF;
+            push @{$edges_ref}, $POS_INF;
         }
     }
 
@@ -650,8 +693,8 @@ Return an identical copy of the set.
 sub copy {
     my $self = shift;
 
-    my $copy = __PACKAGE__->new;
-    $copy->{edges} = [ @{ $self->edges } ];
+    my $copy = blessed($self)->new;
+    $copy->{edges} = [ $self->edges ];
 
     return $copy;
 }
@@ -734,7 +777,7 @@ sub intersect {
     my $self = shift;
 
     my $new = $self->complement;
-    foreach my $supplied (@_) {
+    for my $supplied (@_) {
         my $temp_set = $self->_real_set($supplied)->complement;
         $new->merge($temp_set);
     }
@@ -776,18 +819,18 @@ Returns true if $set and $set_spec contain the same elements.
 sub equal {
     my $self = shift;
 
-    foreach (@_) {
+    for (@_) {
         my $supplied = $self->_real_set($_);
 
         if ( $self->edge_size != $supplied->edge_size ) {
             return 0;
         }
 
-        my $a_edges = $self->edges;
-        my $b_edges = $supplied->edges;
+        my @edges_a = $self->edges;
+        my @edges_b = $supplied->edges;
 
         for ( my $i = 0; $i < $self->edge_size; $i++ ) {
-            if ( $a_edges->[$i] != $b_edges->[$i] ) {
+            if ( $edges_a[$i] != $edges_b[$i] ) {
                 return 0;
             }
         }
@@ -879,10 +922,10 @@ sub _at_pos {
     my $member;
     my $element_before = 0;
 
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower     = shift @edges;
-        my $upper     = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower     = shift @ranges;
+        my $upper     = shift @ranges;
         my $span_size = $upper - $lower + 1;
 
         if ( $index > $element_before + $span_size ) {
@@ -904,10 +947,10 @@ sub _at_neg {
     my $member;
     my $element_after = 0;
 
-    my @r_edges = reverse @{ $self->edges };
-    while (@r_edges) {
-        my $upper     = shift(@r_edges) - 1;
-        my $lower     = shift @r_edges;
+    my @r_ranges = reverse $self->ranges;
+    while (@r_ranges) {
+        my $upper     = shift @r_ranges;
+        my $lower     = shift @r_ranges;
         my $span_size = $upper - $lower + 1;
 
         if ( $index > $element_after + $span_size ) {
@@ -947,10 +990,10 @@ sub index {
     my $index;
     my $element_before = 0;
 
-    my @edges = @{ $self->edges };
-    while (@edges) {
-        my $lower     = shift @edges;
-        my $upper     = shift(@edges) - 1;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower     = shift @ranges;
+        my $upper     = shift @ranges;
         my $span_size = $upper - $lower + 1;
 
         if ( $member >= $lower and $member <= $upper ) {
@@ -991,8 +1034,8 @@ sub _splice {
     my $offset = shift;
     my $length = shift;
 
-    my @edges = @{ $self->{edges} };
-    my $slice = __PACKAGE__->new;
+    my @edges = $self->edges;
+    my $slice = blessed($self)->new;
 
     while ( @edges > 1 ) {
         my ( $lower, $upper ) = @edges[ 0, 1 ];
@@ -1012,45 +1055,50 @@ sub _splice {
 
     $edges[0] += $offset - 1;
 
-    $slice->{edges} = $self->_splice_length( \@edges, $length );
+    my @slices = $self->_splice_length( \@edges, $length );
+    while (@slices) {
+        my $lower = shift @slices;
+        my $upper = shift(@slices) - 1;
+        $slice->add_pair( $lower, $upper );
+    }
 
     return $slice;
 }
 
 sub _splice_length {
-    my $self   = shift;
-    my $edges  = shift;
-    my $length = shift;
+    my $self      = shift;
+    my $edges_ref = shift;
+    my $length    = shift;
 
     if ( !defined $length ) {
-        return $edges;    # everything
+        return @{$edges_ref};    # everything
     }
 
     if ( $length <= 0 ) {
-        return [];        # empty
+        return ();               # empty
     }
 
-    my @slice;
+    my @slices;
 
-    while ( @$edges > 1 ) {
-        my ( $lower, $upper ) = @$edges[ 0, 1 ];
+    while ( @$edges_ref > 1 ) {
+        my ( $lower, $upper ) = @$edges_ref[ 0, 1 ];
         my $span_size = $upper - $lower;
 
         if ( $length <= $span_size ) {
             last;
         }
         else {
-            push @slice, splice( @$edges, 0, 2 );
+            push @slices, splice( @$edges_ref, 0, 2 );
             $length -= $span_size;
         }
     }
 
-    if (@$edges) {
-        my $lower = shift @$edges;
-        push @slice, $lower, $lower + $length;
+    if (@$edges_ref) {
+        my $lower = shift @$edges_ref;
+        push @slices, $lower, $lower + $length;
     }
 
-    return \@slice;
+    return @slices;
 }
 
 =method B<INTERFACE: Extrema>
@@ -1068,7 +1116,7 @@ sub min {
         return;
     }
     else {
-        return $self->{edges}->[0];
+        return $self->edges_ref->[0];
     }
 }
 
@@ -1085,7 +1133,7 @@ sub max {
         return;
     }
     else {
-        return $self->{edges}->[-1] - 1;
+        return $self->edges_ref->[-1] - 1;
     }
 }
 
@@ -1110,7 +1158,7 @@ sub grep_set {
         }
 
     }
-    my $sub_set = __PACKAGE__->new(@sub_elements);
+    my $sub_set = blessed($self)->new(@sub_elements);
 
     return $sub_set;
 }
@@ -1140,7 +1188,7 @@ sub map_set {
         }
 
     }
-    my $map_set = __PACKAGE__->new(@map_elements);
+    my $map_set = blessed($self)->new(@map_elements);
 
     return $map_set;
 }
@@ -1195,18 +1243,16 @@ sub banish_span {
 =method cover
 
 Returns a set consisting of a single span from $set->min to $set->max.
+
 =cut
 
 sub cover {
     my $self = shift;
 
-    my $cover = $self->copy;
-    my $edges = $cover->edges;
-
-    if ( $cover->is_not_empty ) {
-        @$edges = ( $edges->[0], $edges->[-1] );
+    my $cover = blessed($self)->new;
+    if ( $self->is_not_empty ) {
+        $cover->add_pair( $self->min, $self->max );
     }
-
     return $cover;
 }
 
@@ -1220,26 +1266,27 @@ are in-between spans of $set.
 sub holes {
     my $self = shift;
 
-    my $holes = $self->complement;
-    my $edges = $holes->edges;
+    my $holes     = blessed($self)->new;
 
     if ( $self->is_empty or $self->is_universal ) {
 
         # empty set and universal set have no holes
-        $holes->clear;
     }
     else {
+        my $c_set = $self->complement;
+        my @ranges = $c_set->ranges;
 
         # Remove infinite arms of complement set
-        if ( $holes->is_neg_inf ) {
-            shift @{$edges};
-            shift @{$edges};
+        if ( $c_set->is_neg_inf ) {
+            
+            shift @ranges;
+            shift @ranges;
         }
-
-        if ( $holes->is_pos_inf ) {
-            pop @{$edges};
-            pop @{$edges};
+        if ( $c_set->is_pos_inf ) {
+            pop @ranges;
+            pop @ranges;
         }
+        $holes->add_range(@ranges);
     }
 
     return $holes;
@@ -1260,19 +1307,18 @@ sub inset {
     my $self = shift;
     my $n    = shift;
 
-    my $inset = __PACKAGE__->new;
-
-    my @edges = @{ $self->{edges} };
-    while (@edges) {
-        my $lower = shift @edges;
-        my $upper = shift(@edges) - 1;
-        if ( $lower != $NEG_INF ) {
+    my $inset  = blessed($self)->new;
+    my @ranges = $self->ranges;
+    while (@ranges) {
+        my $lower = shift @ranges;
+        my $upper = shift @ranges;
+        if ( $lower != $self->NEG_INF ) {
             $lower += $n;
         }
-        if ( $upper != $POS_INF - 1 ) {
+        if ( $upper != $self->POS_INF ) {
             $upper -= $n;
         }
-        $inset->add_range( $lower, $upper )
+        $inset->add_pair( $lower, $upper )
             if $lower <= $upper;
     }
 
@@ -1315,7 +1361,7 @@ sub excise {
     my $self      = shift;
     my $minlength = shift;
 
-    my $set = __PACKAGE__->new;
+    my $set = blessed($self)->new;
     map { $set->merge($_) } grep { $_->size >= $minlength } $self->sets;
 
     return $set;
@@ -1422,7 +1468,7 @@ sub find_islands {
     my $supplied = shift;
 
     my $island;
-    if ( ref $supplied eq __PACKAGE__ ) {
+    if ( ref $supplied eq ref $self ) {
         $island = $self->_find_islands_set($supplied);
     }
     elsif ( _is_int($supplied) ) {
@@ -1439,13 +1485,13 @@ sub _find_islands_int {
     my $self   = shift;
     my $number = shift;
 
-    my $island = __PACKAGE__->new;
+    my $island = blessed($self)->new;
 
     # if $pos & 1, i.e. $pos is odd number, $val is in the set
-    my $pos = $self->_find_pos( $number + 1 );
+    my $pos = $self->_find_pos( $number + 1, 0 );
     if ( $pos & 1 ) {
-        my $edges = $self->edges;
-        $island->{edges} = [ $edges->[ $pos - 1 ], $edges->[$pos] ];
+        my @ranges = $self->ranges;
+        $island->add_range( $ranges[ $pos - 1 ], $ranges[$pos] );
     }
 
     return $island;
@@ -1455,7 +1501,7 @@ sub _find_islands_set {
     my $self     = shift;
     my $supplied = shift;
 
-    my $islands = __PACKAGE__->new;
+    my $islands = blessed($self)->new;
 
     if ( $self->overlap($supplied) ) {
         for my $subset ( $self->sets ) {
@@ -1485,16 +1531,16 @@ sub nearest_island {
     my $self     = shift;
     my $supplied = shift;
 
-    if ( ref $supplied eq __PACKAGE__ ) {    # just OK
+    if ( ref $supplied eq ref $self ) {    # just OK
     }
     elsif ( _is_int($supplied) ) {
-        $supplied = __PACKAGE__->new($supplied);
+        $supplied = blessed($self)->new($supplied);
     }
     else {
         confess "Don't know how to deal with input to nearest_island\n";
     }
 
-    my $island = __PACKAGE__->new;
+    my $island = blessed($self)->new;
     my $min_d;
     for my $s ( $self->sets ) {
         for my $ss ( $supplied->sets ) {
@@ -1506,7 +1552,7 @@ sub nearest_island {
                 }
                 else {
                     $min_d  = $d;
-                    $island = $s;
+                    $island = $s->copy;
                 }
             }
         }
@@ -1589,11 +1635,11 @@ sub _real_set {
     my $self     = shift;
     my $supplied = shift;
 
-    if ( defined $supplied and ref $supplied eq __PACKAGE__ ) {
+    if ( defined $supplied and ref $supplied eq ref $self ) {
         return $supplied;
     }
     else {
-        return __PACKAGE__->new($supplied);
+        return blessed($self)->new($supplied);
     }
 }
 
@@ -1606,17 +1652,17 @@ sub _real_set {
 sub _find_pos {
     my $self = shift;
     my $val  = shift;
-    my $low  = shift || 0;
+    my $low  = shift;
 
-    my $edges = $self->edges;
-    my $high  = $self->edge_size;
+    my $edges_ref = $self->edges_ref;
+    my $high      = $self->edge_size;
 
     while ( $low < $high ) {
         my $mid = int( ( $low + $high ) / 2 );
-        if ( $val < $edges->[$mid] ) {
+        if ( $val < $edges_ref->[$mid] ) {
             $high = $mid;
         }
-        elsif ( $val > $edges->[$mid] ) {
+        elsif ( $val > $edges_ref->[$mid] ) {
             $low = $mid + 1;
         }
         else {
@@ -1637,101 +1683,35 @@ sub _is_int {
 
 =method B<INTERFACE: Aliases>
 
-=cut
-
-no warnings 'all';
-
-=method runlist => as_string
-
-=cut
-
-*runlist = \&as_string;
-
-=method run_list => as_string
-
-=cut
-
-*run_list = \&as_string;
-
-=method elements => as_array
+runlist, run_list           => as_string
+elements                    => as_array
+size, count                 => cardinality
+empty                       => is_empty
+contains, contain, member   => contains_all
+duplicate                   => copy
+intersection                => intersect
+equals                      => equal
+lookup_index                => at
+lookup_member               => index
+join_span                   => fill
 
 =cut
 
-*elements = \&as_array;
-
-=method size => cardinality
-
-=cut
-
-*size = \&cardinality;
-
-=method count => cardinality
-
-=cut
-
-*count = \&cardinality;
-
-=method empty => is_empty
-
-=cut
-
-*empty = \&is_empty;
-
-=method contains => contains_all
-
-=cut
-
-*contains = \&contains_all;
-
-=method contain => contains_all
-
-=cut
-
-*contain = \&contains_all;
-
-=method member => contains_all
-
-=cut
-
-*member = \&contains_all;
-
-=method duplicate => copy
-
-=cut
-
-*duplicate = \&copy;
-
-=method intersection => intersect
-
-=cut
-
-*intersection = \&intersect;
-
-=method equals => equal
-
-=cut
-
-*equals = \&equal;
-
-=method lookup_index => at
-
-=cut
-
-*lookup_index = \&at;
-
-=method lookup_member => index
-
-=cut
-
-*lookup_member = \&index;
-
-=method join_span => fill
-
-=cut
-
-*join_span = \&fill;
-
-use warnings;
+sub runlist       { shift->as_string(@_); }
+sub run_list      { shift->as_string(@_); }
+sub elements      { shift->as_array(@_); }
+sub size          { shift->cardinality(@_); }
+sub count         { shift->cardinality(@_); }
+sub empty         { shift->is_empty; }
+sub contains      { shift->contains_all(@_); }
+sub contain       { shift->contains_all(@_); }
+sub member        { shift->contains_all(@_); }
+sub duplicate     { shift->copy; }
+sub intersection  { shift->intersect(@_); }
+sub equals        { shift->equal(@_); }
+sub lookup_index  { shift->at(@_); }
+sub lookup_member { shift->index(@_); }
+sub join_span     { shift->fill(@_); }
 
 1;    # Magic true value required at end of module
 

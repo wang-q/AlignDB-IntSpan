@@ -49,7 +49,7 @@ sub as_array_ref {
     return [ sort { $a <=> $b } map { 1 * $_ } keys %$self ];
 }
 
-# Extend Set::IntSpace::Fast
+# Extend AlignDB::IntSpan
 
 package AlignDB::IntSpan;
 

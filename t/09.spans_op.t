@@ -9,8 +9,8 @@ BEGIN {
     use_ok('AlignDB::IntSpan');
 }
 
-my $pos = AlignDB::IntSpan->POS_INF;
-my $neg = AlignDB::IntSpan->NEG_INF;
+my $pos = AlignDB::IntSpan->new->POS_INF;
+my $neg = AlignDB::IntSpan->new->NEG_INF;
 
 # cover
 {
@@ -66,11 +66,11 @@ my $neg = AlignDB::IntSpan->NEG_INF;
 {
 
     my @inset_tests = (
-        [ ' - ', -2, ' - ' ],
-        [ ' - ', -1, ' - ' ],
-        [ ' - ', 0,  ' - ' ],
-        [ ' - ', 1,  ' - ' ],
-        [ ' - ', 2,  ' - ' ],
+        [ '-', -2, '-' ],
+        [ '-', -1, '-' ],
+        [ '-', 0,  '-' ],
+        [ '-', 1,  '-' ],
+        [ '-', 2,  '-' ],
 
         [ "$neg-$pos", -2, "$neg-$pos" ],
         [ "$neg-$pos", 2,  "$neg-$pos" ],

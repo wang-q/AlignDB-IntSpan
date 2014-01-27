@@ -10,9 +10,9 @@ BEGIN {
 
 {
     srand( time ^ $$ );
-    my @members = ();
-    my @sets = map { AlignDB::IntSpan->new() } ( 1 .. 7 );
+    my @sets = map { (AlignDB::IntSpan->new) } ( 1 .. 7 );
 
+    my @members = ();
     my $next = int( rand(100) );
     for ( 1 .. 100 ) {
         push @members, ($next);
