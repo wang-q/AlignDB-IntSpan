@@ -432,7 +432,7 @@ sub contains_any {
 =method add_pair
 
     $set->add_pair($lower, $upper);
-    
+ 
 Add a pair of inclusive integers to the set.
 
 A pair of arguments constitute a range
@@ -472,7 +472,7 @@ sub add_pair {
 =method add_range
 
     $set->add_range($lower, $upper);
-    
+
 Add the inclusive range of integers to the set.
 
 Multiple ranges may be specified. Each pair of arguments constitute a range
@@ -547,7 +547,7 @@ sub add {
 =method invert
 
     $set = $set->invert;
-    
+
 Complement the set.
 
 Because our notion of infinity is actually disappointingly finite inverting a
@@ -614,7 +614,7 @@ sub remove_range {
 
     $set->remove($number1, $number2, $number3 ...);
     $set->remove($runlist);
-    
+
 Remove the specified integers or a runlist to the set. 
 
 =cut
@@ -685,7 +685,7 @@ sub subtract {
 =method copy
 
     my $new_set = $set->copy;
-    
+
 Return an identical copy of the set.
 
 =cut
@@ -760,12 +760,12 @@ sub diff {
 =method intersect
 
 Be called either as a method
-    
+
     my $new_set = $set->intersect( $other_set );
 
 or as a function:
 
-    
+
     my $new_set = AlignDB::IntSpan::intersect( $set1, $set2, $set3 );
 
 Return a new set that is the intersection of this set and all the supplied
@@ -793,7 +793,7 @@ Be called either as a method
     my $new_set = $set->xor( $other_set );
 
 or as a function:
-    
+
     my $new_set = AlignDB::IntSpan::xor( $set1, $set2, $set3 );
 
 Return a new set that contains all of the members that are in this set or the
@@ -1417,7 +1417,7 @@ sub overlap {
 Returns the distance between sets, measured as follows.
 
 If the sets overlap, then the distance is negative and given by
-    
+
     $d = - $set->overlap( $another_set )
 
 If the sets do not overlap, $d is positive and given by the distance on the
@@ -1455,7 +1455,7 @@ sub distance {
 
     my $island = $set->find_islands( $integer );
     my $new_set = $set->find_islands( $another_set );
-    
+
 Returns a set containing the island in $set containing $integer.
 If $integer is not in $set, an empty set is returned.
 Returns a set containing all islands in $set intersecting $another_set.
@@ -1683,17 +1683,27 @@ sub _is_int {
 
 =method B<INTERFACE: Aliases>
 
-runlist, run_list           => as_string
-elements                    => as_array
-size, count                 => cardinality
-empty                       => is_empty
-contains, contain, member   => contains_all
-duplicate                   => copy
-intersection                => intersect
-equals                      => equal
-lookup_index                => at
-lookup_member               => index
-join_span                   => fill
+    runlist, run_list           => as_string
+
+    elements                    => as_array
+
+    size, count                 => cardinality
+
+    empty                       => is_empty
+
+    contains, contain, member   => contains_all
+
+    duplicate                   => copy
+
+    intersection                => intersect
+
+    equals                      => equal
+
+    lookup_index                => at
+
+    lookup_member               => index
+
+    join_span                   => fill
 
 =cut
 
