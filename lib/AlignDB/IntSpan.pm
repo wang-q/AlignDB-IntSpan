@@ -364,7 +364,7 @@ Return true if the set is infinite.
 
 sub is_infinite {
     my $self = shift;
-    return $self->is_neg_inf or $self->is_pos_inf;
+    return $self->is_neg_inf || $self->is_pos_inf;
 }
 
 =method is_finite
@@ -386,7 +386,7 @@ Return true if the set contains all integers.
 
 sub is_universal {
     my $self = shift;
-    return $self->edge_size == 2 and $self->is_neg_inf and $self->is_pos_inf;
+    return $self->edge_size == 2 && $self->is_neg_inf && $self->is_pos_inf;
 }
 
 =method B<INTERFACE: Membership test>
