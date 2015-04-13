@@ -6,8 +6,9 @@ use strict;
 use warnings;
 use Carp;
 
-use Scalar::Util qw(looks_like_number blessed);
 use Readonly;
+use Scalar::Util qw(blessed);
+use Scalar::Util::Numeric qw(isint);
 
 use overload (
     q{0+} => sub { confess "Can't numerify an AlignDB::IntSpan\n" },
@@ -529,7 +530,7 @@ sub add {
     if ( ref $first eq ref $self ) {
         $self->add_range( $first->ranges );
     }
-    elsif ( _is_int($first) ) {
+    elsif ( isint($first) ) {
         if ( scalar @_ > 0 ) {
             $self->add_range( $self->_list_to_ranges( $first, @_ ) );
         }
@@ -623,7 +624,7 @@ sub remove {
     my $self  = shift;
     my $first = shift;
 
-    if ( _is_int($first) ) {
+    if ( isint($first) ) {
         if ( scalar @_ > 0 ) {
             $self->remove_range( $self->_list_to_ranges( $first, @_ ) );
         }
@@ -1471,7 +1472,7 @@ sub find_islands {
     if ( ref $supplied eq ref $self ) {
         $island = $self->_find_islands_set($supplied);
     }
-    elsif ( _is_int($supplied) ) {
+    elsif ( isint($supplied) ) {
         $island = $self->_find_islands_int($supplied);
     }
     else {
@@ -1533,7 +1534,7 @@ sub nearest_island {
 
     if ( ref $supplied eq ref $self ) {    # just OK
     }
-    elsif ( _is_int($supplied) ) {
+    elsif ( isint($supplied) ) {
         $supplied = blessed($self)->new($supplied);
     }
     else {
@@ -1671,14 +1672,6 @@ sub _find_pos {
     }
 
     return $low;
-}
-
-# Is this an integer?
-sub _is_int {
-    return if ref $_[0];
-    return unless looks_like_number( $_[0] );
-    return unless $_[0] =~ /^[+-]?\d+$/;
-    return 1;
 }
 
 =method B<INTERFACE: Aliases>
