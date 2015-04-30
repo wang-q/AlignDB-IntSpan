@@ -527,7 +527,7 @@ sub add {
     my $self  = shift;
     my $first = shift;
 
-    if ( ref $first eq ref $self ) {
+    if ( ref $first eq __PACKAGE__ ) {
         $self->add_range( $first->ranges );
     }
     elsif ( isint($first) ) {
@@ -623,8 +623,8 @@ Remove the specified integers or a runlist to the set.
 sub remove {
     my $self  = shift;
     my $first = shift;
-    
-    if ( ref $first eq ref $self ) {
+
+    if ( ref $first eq __PACKAGE__ ) {
         $self->remove_range( $first->ranges );
     }
     elsif ( isint($first) ) {
@@ -1270,19 +1270,19 @@ are in-between spans of $set.
 sub holes {
     my $self = shift;
 
-    my $holes     = blessed($self)->new;
+    my $holes = blessed($self)->new;
 
     if ( $self->is_empty or $self->is_universal ) {
 
         # empty set and universal set have no holes
     }
     else {
-        my $c_set = $self->complement;
+        my $c_set  = $self->complement;
         my @ranges = $c_set->ranges;
 
         # Remove infinite arms of complement set
         if ( $c_set->is_neg_inf ) {
-            
+
             shift @ranges;
             shift @ranges;
         }
@@ -1472,7 +1472,7 @@ sub find_islands {
     my $supplied = shift;
 
     my $island;
-    if ( ref $supplied eq ref $self ) {
+    if ( ref $supplied eq __PACKAGE__ ) {
         $island = $self->_find_islands_set($supplied);
     }
     elsif ( isint($supplied) ) {
@@ -1535,7 +1535,7 @@ sub nearest_island {
     my $self     = shift;
     my $supplied = shift;
 
-    if ( ref $supplied eq ref $self ) {    # just OK
+    if ( ref $supplied eq __PACKAGE__ ) {    # just OK
     }
     elsif ( isint($supplied) ) {
         $supplied = blessed($self)->new($supplied);
@@ -1639,7 +1639,7 @@ sub _real_set {
     my $self     = shift;
     my $supplied = shift;
 
-    if ( defined $supplied and ref $supplied eq ref $self ) {
+    if ( defined $supplied and ref $supplied eq __PACKAGE__ ) {
         return $supplied;
     }
     else {
