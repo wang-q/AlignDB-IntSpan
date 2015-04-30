@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6063;
+use Test::More tests => 8646;
 
 BEGIN {
     use_ok('AlignDB::IntSpan');
@@ -84,7 +84,7 @@ package main;
 # Simple cases - two ranges overlapping in various ways
 for my $i ( -5 .. 5 ) {
     for my $j ( $i .. 5 ) {
-        my @set = ( AlignDB::IntSpan->new(), TestSet->new() );
+        my @set = ( AlignDB::IntSpan->new, TestSet->new );
         $_->add_range( -2, 2 ) for @set;
         is_deeply(
             $set[0]->as_array_ref(),
@@ -104,7 +104,7 @@ for my $i ( -5 .. 5 ) {
 # More complex cases - multiple overlaps
 for my $i ( -20 .. 20 ) {
     for my $j ( $i .. 20 ) {
-        my @set = ( AlignDB::IntSpan->new(), TestSet->new() );
+        my @set = ( AlignDB::IntSpan->new, TestSet->new );
         for my $s (@set) {
             my $gap = 0;
             my $pos = -18;
@@ -137,7 +137,7 @@ for my $i ( -20 .. 20 ) {
 # Simple cases - two ranges overlapping in various ways
 for my $i ( -5 .. 5 ) {
     for my $j ( $i .. 5 ) {
-        my @set = ( AlignDB::IntSpan->new(), TestSet->new() );
+        my @set = ( AlignDB::IntSpan->new, TestSet->new );
         $_->add_range( -2, 2 ) for @set;
         is_deeply(
             $set[0]->as_array_ref(),
@@ -157,7 +157,7 @@ for my $i ( -5 .. 5 ) {
 # More complex cases - multiple overlaps
 for my $i ( -20 .. 20 ) {
     for my $j ( $i .. 20 ) {
-        my @set = ( AlignDB::IntSpan->new(), TestSet->new() );
+        my @set = ( AlignDB::IntSpan->new, TestSet->new );
         for my $s (@set) {
             my $gap = 0;
             my $pos = -18;
@@ -190,7 +190,7 @@ for my $i ( -20 .. 20 ) {
 # Some psuedorandom cases
 srand(1);
 for ( 1 .. 500 ) {
-    my @set = ( AlignDB::IntSpan->new(), TestSet->new() );
+    my @set = ( AlignDB::IntSpan->new, TestSet->new );
     my @add = map { ( $_, $_ + int( rand(10) ) ) }
         map { int( rand(10) ) } ( 1 .. int( rand(17) ) );
     my @rem = map { ( $_, $_ + int( rand(10) ) ) }
@@ -202,4 +202,61 @@ for ( 1 .. 500 ) {
         $set[1]->as_array_ref(),
         "random ranges"
     );
+}
+
+# add and remove object
+for my $i ( -20 .. 20 ) {
+    for my $j ( $i .. 20 ) {
+        my @set = ( AlignDB::IntSpan->new, TestSet->new );
+        {
+            my $gap = 0;
+            my $pos = -18;
+            while ( $pos < 18 ) {
+                my $t = AlignDB::IntSpan->new;
+                $t->add_range($pos, $pos + $gap);
+                $set[0]->add( $t);
+                $pos += $gap * 2;
+                $gap++;
+            }
+
+            # Half the time add an extra element
+            if ( $j & 1 ) {
+                $set[0]->add( AlignDB::IntSpan->new($pos) );
+            }
+        }
+        {
+            my $gap = 0;
+            my $pos = -18;
+            while ( $pos < 18 ) {
+                $set[1]->add_range( $pos, $pos + $gap );
+                $pos += $gap * 2;
+                $gap++;
+            }
+
+            # Half the time add an extra element
+            if ( $j & 1 ) {
+                $set[1]->add_range( $pos, $pos );
+            }
+        }
+        is_deeply(
+            $set[0]->as_array_ref(),
+            $set[1]->as_array_ref(),
+            "add init range"
+        );
+        
+        {
+            my $t = AlignDB::IntSpan->new;
+            $t->add_range($i, $j);
+            $set[0]->remove($t);
+        }
+        {
+            $set[1]->remove_range( $i, $j )
+        }
+        is_deeply(
+            $set[0]->as_array_ref(),
+            $set[1]->as_array_ref(),
+            "remove $i to $j"
+        );
+        is( $set[0]->is_sane(), 0, "sanity check" );
+    }
 }

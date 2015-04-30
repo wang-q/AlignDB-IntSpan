@@ -623,8 +623,11 @@ Remove the specified integers or a runlist to the set.
 sub remove {
     my $self  = shift;
     my $first = shift;
-
-    if ( isint($first) ) {
+    
+    if ( ref $first eq ref $self ) {
+        $self->remove_range( $first->ranges );
+    }
+    elsif ( isint($first) ) {
         if ( scalar @_ > 0 ) {
             $self->remove_range( $self->_list_to_ranges( $first, @_ ) );
         }
