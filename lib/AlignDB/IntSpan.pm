@@ -969,18 +969,6 @@ sub _at_neg {
     return $member;
 }
 
-=method lookup_back_index
-
-Give an backword index, return a element
-
-=cut
-
-sub lookup_back_index {
-    my $self  = shift;
-    my $index = shift;
-    return $self->at( -$index );
-}
-
 =method index
 
 Returns the index fo a element in the set, index start from "1"
@@ -1695,10 +1683,6 @@ sub _find_pos {
 
     equals                      => equal
 
-    lookup_index                => at
-
-    lookup_member               => index
-
     join_span                   => fill
 
 =cut
@@ -1715,8 +1699,6 @@ sub member        { shift->contains_all(@_); }
 sub duplicate     { shift->copy; }
 sub intersection  { shift->intersect(@_); }
 sub equals        { shift->equal(@_); }
-sub lookup_index  { shift->at(@_); }
-sub lookup_member { shift->index(@_); }
 sub join_span     { shift->fill(@_); }
 
 1;    # Magic true value required at end of module
