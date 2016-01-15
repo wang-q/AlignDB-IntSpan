@@ -1121,10 +1121,6 @@ __END__
 
 AlignDB::IntSpan - Handling of sets containing integer spans.
 
-=head1 VERSION
-
-version 0.151200
-
 =head1 SYNOPSIS
 
     use AlignDB::IntSpan;
