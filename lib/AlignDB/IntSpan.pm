@@ -1,11 +1,8 @@
 package AlignDB::IntSpan;
-
-# ABSTRACT: Handling of sets containing integer spans.
-
 use strict;
 use warnings;
-use Carp;
 
+use Carp;
 use Readonly;
 use Scalar::Util qw(blessed);
 use Scalar::Util::Numeric qw(isint);
@@ -19,52 +16,22 @@ use overload (
     fallback => 1,
 );
 
-=method B<CONSTANTS>
-
-=cut
+our $VERSION = '1.0.0';
 
 Readonly my $POS_INF => 2_147_483_647 - 1;             # INT_MAX - 1
 Readonly my $NEG_INF => ( -2_147_483_647 - 1 ) + 1;    # INT_MIN + 1
-
-=method POS_INF
-
-Normally used in construction of infinite sets
-
-=cut
 
 sub POS_INF {
     return $POS_INF - 1;
 }
 
-=method NEG_INF
-
-Normally used in construction of infinite sets
-
-=cut
-
 sub NEG_INF {
     return $NEG_INF;
 }
 
-=method EMPTY_STRING
-
-=cut
-
 sub EMPTY_STRING {
     return '-';
 }
-
-=method B<INTERFACE: Set creation>
-
-=method new
-
-    my $set = AlignDB::Intspan->new; # empty set
-    my $set = AlignDB::Intspan->new($set_spec); # the content of $set_spec
-    my $set = AlignDB::Intspan->new(@set_specs); # the union of @set_specs
-
-Creates and returns an AlignDB::IntSpan object.
-
-=cut
 
 sub new {
     my $class = shift;
@@ -74,14 +41,6 @@ sub new {
     $self->add(@_) if @_ > 0;
     return $self;
 }
-
-=method valid
-
-    my $ok = AlignDB::IntSpan->valid($run_list);
-
-Returns true if $run_list is a valid run list.
-
-=cut
 
 sub valid {
     my $this    = shift;
@@ -94,75 +53,31 @@ sub valid {
     return $@ ? 0 : 1;
 }
 
-=method clear
-
-    $set->clear;
-
-Clear all contents of $set
-
-=cut
-
 sub clear {
     my $self = shift;
     $self->{edges} = [];
     return $self;
 }
 
-=method B<INTERFACE: Set contents>
-
-=method edges_ref
-
-Return the internal used ArrayRef representing the set.
-
-I don't think you should use this method.
-
-=cut
-
 sub edges_ref {
     my $self = shift;
     return $self->{edges};
 }
-
-=method edges
-
-Return the internal used Array representing the set.
-
-I don't think you should use this method.
-
-=cut
 
 sub edges {
     my $self = shift;
     return @{ $self->edges_ref };
 }
 
-=method edge_size
-
-Return the number of edges
-
-=cut
-
 sub edge_size {
     my $self = shift;
     return scalar $self->edges;
 }
 
-=method span_size
-
-Return the number of spans
-
-=cut
-
 sub span_size {
     my $self = shift;
     return $self->edge_size / 2;
 }
-
-=method as_string
-
-Return a string representation of the set.
-
-=cut
 
 sub as_string {
     my $self = shift;
@@ -182,12 +97,6 @@ sub as_string {
     return join( ',', @runs );
 }
 
-=method as_array
-
-Return an array containing all the members of the set in ascending order.
-
-=cut
-
 sub as_array {
     my $self = shift;
 
@@ -201,14 +110,6 @@ sub as_array {
 
     return @elements;
 }
-
-=method B<INTERFACE: Span contents>
-
-=method ranges
-
-Returns the runs in $set, as a list of ($lower, $upper)
-
-=cut
 
 sub ranges {
     my $self = shift;
@@ -224,12 +125,6 @@ sub ranges {
     return @ranges;
 }
 
-=method spans
-
-Returns the runs in $set, as a list of [$lower, $upper]
-
-=cut
-
 sub spans {
     my $self = shift;
 
@@ -244,13 +139,6 @@ sub spans {
     return @spans;
 }
 
-=method sets
-
-Returns the runs in $set, as a list of AlignDB::IntSpan objects. The sets in
-the list are in order.
-
-=cut
-
 sub sets {
     my $self = shift;
 
@@ -264,12 +152,6 @@ sub sets {
 
     return @sets;
 }
-
-=method runlists
-
-Returns the runs in $set, as a list of "$lower-$upper"
-
-=cut
 
 sub runlists {
     my $self = shift;
@@ -290,14 +172,6 @@ sub runlists {
     return @runlists;
 }
 
-=method B<INTERFACE: Set cardinality>
-
-=method cardinality
-
-Returns the number of elements in $set.
-
-=cut
-
 sub cardinality {
     my $self = shift;
 
@@ -312,91 +186,41 @@ sub cardinality {
     return $cardinality;
 }
 
-=method is_empty
-
-Return true if the set is empty.
-
-=cut
-
 sub is_empty {
     my $self = shift;
     my $result = $self->edge_size == 0 ? 1 : 0;
     return $result;
 }
 
-=method is_not_empty
-
-Return true if the set is not empty.
-
-=cut
-
 sub is_not_empty {
     my $self = shift;
     return !$self->is_empty;
 }
-
-=method is_neg_inf
-
-Return true if the set is negtive infinite.
-
-=cut
 
 sub is_neg_inf {
     my $self = shift;
     return $self->edges_ref->[0] == $NEG_INF;
 }
 
-=method is_pos_inf
-
-Return true if the set is positive infinite.
-
-=cut
-
 sub is_pos_inf {
     my $self = shift;
     return $self->edges_ref->[-1] == $POS_INF;
 }
-
-=method is_infinite
-
-Return true if the set is infinite.
-
-=cut
 
 sub is_infinite {
     my $self = shift;
     return $self->is_neg_inf || $self->is_pos_inf;
 }
 
-=method is_finite
-
-Return true if the set is finite.
-
-=cut
-
 sub is_finite {
     my $self = shift;
     return !$self->is_infinite;
 }
 
-=method is_universal
-
-Return true if the set contains all integers.
-
-=cut
-
 sub is_universal {
     my $self = shift;
     return $self->edge_size == 2 && $self->is_neg_inf && $self->is_pos_inf;
 }
-
-=method B<INTERFACE: Membership test>
-
-=method contains_all
-
-Return true if the set contains all of the specified numbers.
-
-=cut
 
 sub contains_all {
     my $self = shift;
@@ -409,12 +233,6 @@ sub contains_all {
     return 1;
 }
 
-=method contains_any
-
-Return true if the set contains any of the specified numbers.
-
-=cut
-
 sub contains_any {
     my $self = shift;
 
@@ -425,20 +243,6 @@ sub contains_any {
 
     return 0;
 }
-
-=method B<INTERFACE: Member operations>
-
-=cut
-
-=method add_pair
-
-    $set->add_pair($lower, $upper);
- 
-Add a pair of inclusive integers to the set.
-
-A pair of arguments constitute a range
-
-=cut
 
 sub add_pair {
     my $self   = shift;
@@ -470,16 +274,6 @@ sub add_pair {
     return $self;
 }
 
-=method add_range
-
-    $set->add_range($lower, $upper);
-
-Add the inclusive range of integers to the set.
-
-Multiple ranges may be specified. Each pair of arguments constitute a range
-
-=cut
-
 sub add_range {
     my $self   = shift;
     my @ranges = @_;
@@ -497,14 +291,6 @@ sub add_range {
     return $self;
 }
 
-=method add_runlist
-
-    $set->add_runlist($runlist);
-
-Add the specified runlist to the set.
-
-=cut
-
 sub add_runlist {
     my $self  = shift;
     my $first = shift;
@@ -513,15 +299,6 @@ sub add_runlist {
 
     return $self;
 }
-
-=method add
-
-    $set->add($number1, $number2, $number3 ...)
-    $set->add($runlist);
-
-Add the specified integers or a runlist to the set.
-
-=cut
 
 sub add {
     my $self  = shift;
@@ -544,20 +321,6 @@ sub add {
 
     return $self;
 }
-
-=method invert
-
-    $set = $set->invert;
-
-Complement the set.
-
-Because our notion of infinity is actually disappointingly finite inverting a
-finite set results in another finite set. For example inverting the empty set
-makes it contain all the integers between $NEG_INF and $POS_INF inclusive.
-
-As noted above $NEG_INF and $POS_INF are actually just big integers.
-
-=cut
 
 sub invert {
     my $self = shift;
@@ -591,16 +354,6 @@ sub invert {
     return $self;
 }
 
-=method remove_range
-
-$set->remove_range($lower, $upper);
-
-Remove the inclusive range of integers to the set.
-
-Multiple ranges may be specified. Each pair of arguments constitute a range.
-
-=cut
-
 sub remove_range {
     my $self = shift;
 
@@ -610,15 +363,6 @@ sub remove_range {
 
     return $self;
 }
-
-=method remove
-
-    $set->remove($number1, $number2, $number3 ...);
-    $set->remove($runlist);
-
-Remove the specified integers or a runlist to the set. 
-
-=cut
 
 sub remove {
     my $self  = shift;
@@ -642,16 +386,6 @@ sub remove {
     return $self;
 }
 
-=method merge
-
-    $set->merge($another_set);
-    $set->merge($set_spec);
-
-Merge the members of the supplied sets or set_specs into this set.
-Any number of sets may be supplied as arguments.
-
-=cut
-
 sub merge {
     my $self = shift;
 
@@ -662,16 +396,6 @@ sub merge {
 
     return $self;
 }
-
-=method subtract
-
-    $set->subtract($another_set);
-    $set->subtract($set_spec);
-
-Subtract the members of the supplied sets or set_specs out of this set.
-Any number of sets may be supplied as arguments.
-
-=cut
 
 sub subtract {
     my $self = shift;
@@ -684,16 +408,6 @@ sub subtract {
     return $self;
 }
 
-=method B<INTERFACE: Set operations>
-
-=method copy
-
-    my $new_set = $set->copy;
-
-Return an identical copy of the set.
-
-=cut
-
 sub copy {
     my $self = shift;
 
@@ -702,20 +416,6 @@ sub copy {
 
     return $copy;
 }
-
-=method union
-
-Be called either as a method
-
-    my $new_set = $set->union( $other_set );
-
-or as a function:
-
-    my $new_set = AlignDB::IntSpan::union( $set1, $set2, $set3 );
-
-Return a new set that is the union of this set and all of the supplied sets.
-
-=cut
 
 sub union {
     my $self = shift;
@@ -726,14 +426,6 @@ sub union {
     return $new;
 }
 
-=method complement
-
-    my $new_set = $set->complement;
-
-Returns a new set that is the complement of this set.
-
-=cut
-
 sub complement {
     my $self = shift;
 
@@ -743,15 +435,6 @@ sub complement {
     return $new;
 }
 
-=method diff
-
-    my $new_set = $set->diff( $other_set );
-
-Return a set containing all the elements that are in this set but not the
-supplied set.
-
-=cut
-
 sub diff {
     my $self = shift;
 
@@ -760,22 +443,6 @@ sub diff {
 
     return $new;
 }
-
-=method intersect
-
-Be called either as a method
-
-    my $new_set = $set->intersect( $other_set );
-
-or as a function:
-
-
-    my $new_set = AlignDB::IntSpan::intersect( $set1, $set2, $set3 );
-
-Return a new set that is the intersection of this set and all the supplied
-sets.
-
-=cut
 
 sub intersect {
     my $self = shift;
@@ -790,35 +457,9 @@ sub intersect {
     return $new;
 }
 
-=method xor
-
-Be called either as a method
-
-    my $new_set = $set->xor( $other_set );
-
-or as a function:
-
-    my $new_set = AlignDB::IntSpan::xor( $set1, $set2, $set3 );
-
-Return a new set that contains all of the members that are in this set or the
-supplied set but not both. 
-
-Can actually handle more than two setsin which case it returns a set that
-contains all the members that are in some of the sets but not all of the sets.
-
-=cut
-
 sub xor {
     return intersect( union(@_), intersect(@_)->complement );
 }
-
-=method B<INTERFACE: Set comparison>
-
-=method equal
-
-Returns true if $set and $set_spec contain the same elements.
-
-=cut
 
 sub equal {
     my $self = shift;
@@ -843,12 +484,6 @@ sub equal {
     return 1;
 }
 
-=method subset
-
-Returns true if $set is a subset of $set_spec.
-
-=cut
-
 sub subset {
     my $self     = shift;
     my $supplied = $self->_real_set(shift);
@@ -856,24 +491,12 @@ sub subset {
     return $self->diff($supplied)->is_empty;
 }
 
-=method superset
-
-Returns true if $set is a superset of $set_spec.
-
-=cut
-
 sub superset {
     my $self     = shift;
     my $supplied = $self->_real_set(shift);
 
     return $supplied->diff($self)->is_empty;
 }
-
-=method smaller_than
-
-Returns true if $set is smaller than $set_spec.
-
-=cut
 
 sub smaller_than {
     my $self     = shift;
@@ -884,12 +507,6 @@ sub smaller_than {
     return $result ? 1 : 0;
 }
 
-=method larger_than
-
-Returns true if $set is larger than $set_spec.
-
-=cut
-
 sub larger_than {
     my $self     = shift;
     my $supplied = shift;
@@ -898,15 +515,6 @@ sub larger_than {
 
     return $result ? 1 : 0;
 }
-
-=method B<INTERFACE: Indexing>
-
-=method at
-
-Returns the indexth element of set, index start from "1".
-Negtive indices count backwards from the end of the set.
-
-=cut
 
 sub at {
     my $self  = shift;
@@ -969,12 +577,6 @@ sub _at_neg {
     return $member;
 }
 
-=method index
-
-Returns the index fo a element in the set, index start from "1"
-
-=cut
-
 sub index {
     my $self   = shift;
     my $member = shift;
@@ -999,13 +601,6 @@ sub index {
 
     return $index;
 }
-
-=method slice
-
-Give two indexes, return a subset.
-These indexes must be positive.
-
-=cut
 
 sub slice {
     my $self = shift;
@@ -1093,14 +688,6 @@ sub _splice_length {
     return @slices;
 }
 
-=method B<INTERFACE: Extrema>
-
-=method min
-
-Returns the smallest element of $set, or undef if there is none.
-
-=cut
-
 sub min {
     my $self = shift;
 
@@ -1112,12 +699,6 @@ sub min {
     }
 }
 
-=method max
-
-Returns the largest element of $set, or undef if there is none.
-
-=cut
-
 sub max {
     my $self = shift;
 
@@ -1128,16 +709,6 @@ sub max {
         return $self->edges_ref->[-1] - 1;
     }
 }
-
-=method B<INTERFACE: Utils>
-
-=method grep_set
-
-Evaluates the $code_ref for each integer in $set (locally setting $_ to each
-integer) and returns an AlignDB::IntSpan object containing those integers for
-which the $code_ref returns TRUE.
-
-=cut
 
 sub grep_set {
     my $self     = shift;
@@ -1154,18 +725,6 @@ sub grep_set {
 
     return $sub_set;
 }
-
-=method map_set
-
-Evaluates the $code_ref for each integer in $set (locally setting $_ to each
-integer) and returns an AlignDB::IntSpan object containing all the integers
-returned as results of all those evaluations.
-
-Evaluates the $code_ref in list context, so each element of $set may produce
-zero, one, or more elements in the returned set. The elements may be returned
-in any order, and need not be disjoint.
-
-=cut
 
 sub map_set {
     my $self     = shift;
@@ -1185,12 +744,6 @@ sub map_set {
     return $map_set;
 }
 
-=method substr_span
-
-    my $substring = $set->substr_span($string);
-
-=cut
-
 sub substr_span {
     my $self   = shift;
     my $string = shift;
@@ -1207,12 +760,6 @@ sub substr_span {
 
     return $sub_string;
 }
-
-=method B<INTERFACE: Spans operations>
-
-=method banish_span
-
-=cut
 
 sub banish_span {
     my $self  = shift;
@@ -1232,12 +779,6 @@ sub banish_span {
     return $new;
 }
 
-=method cover
-
-Returns a set consisting of a single span from $set->min to $set->max.
-
-=cut
-
 sub cover {
     my $self = shift;
 
@@ -1247,13 +788,6 @@ sub cover {
     }
     return $cover;
 }
-
-=method holes
-
-Returns a set containing all the holes in $set, that is, all the integers that
-are in-between spans of $set.
-
-=cut
 
 sub holes {
     my $self = shift;
@@ -1284,17 +818,6 @@ sub holes {
     return $holes;
 }
 
-=method inset
-
-inset returns a set constructed by removing $n integers from each end of each
-span of $set. If $n is negative, then -$n integers are added to each end of
-each span.
-
-In the first case, spans may vanish from the set; in the second case, holes
-may vanish.
-
-=cut
-
 sub inset {
     my $self = shift;
     my $n    = shift;
@@ -1317,37 +840,17 @@ sub inset {
     return $inset;
 }
 
-=method trim
-
-trim is provided as a synonym for inset.
-
-=cut
-
 sub trim {
     my $self = shift;
     my $n    = shift;
     return $self->inset($n);
 }
 
-=method pad
-
-pad $set $n is the same as $set->inset( -$n )
-
-=cut
-
 sub pad {
     my $self = shift;
     my $n    = shift;
     return $self->inset( -$n );
 }
-
-=method excise
-
-    my $new_set = $set->excise( $minlength )
-
-Removes all spans within $set smaller than $minlength
-
-=cut
 
 sub excise {
     my $self      = shift;
@@ -1358,14 +861,6 @@ sub excise {
 
     return $set;
 }
-
-=method fill
-
-    my $new_set = $set->fill( $maxlength )
-
-Fills in all holes in $set smaller than $maxlength
-
-=cut
 
 sub fill {
     my $self      = shift;
@@ -1382,40 +877,11 @@ sub fill {
     return $set;
 }
 
-=method B<INTERFACE: Inter-set operations>
-
-=cut
-
-=method overlap
-
-    my $overlap_amount = $set->overlap( $another_set );
-
-Returns the size of intersection of two sets. Equivalent to
-
-    $set->intersect( $another_set )->size;
-
-=cut
-
 sub overlap {
     my $self     = shift;
     my $supplied = shift;
     return $self->intersect($supplied)->size;
 }
-
-=method distance
-
-    my $distance = $set->distance( $another_set );
-
-Returns the distance between sets, measured as follows.
-
-If the sets overlap, then the distance is negative and given by
-
-    $d = - $set->overlap( $another_set )
-
-If the sets do not overlap, $d is positive and given by the distance on the
-integer line between the two closest islands of the sets.
-
-=cut
 
 sub distance {
     my $self     = shift;
@@ -1440,20 +906,6 @@ sub distance {
 
     return $min_d;
 }
-
-=method B<INTERFACE: Islands>
-
-=method find_islands
-
-    my $island = $set->find_islands( $integer );
-    my $new_set = $set->find_islands( $another_set );
-
-Returns a set containing the island in $set containing $integer.
-If $integer is not in $set, an empty set is returned.
-Returns a set containing all islands in $set intersecting $another_set.
-If $set and $another_set have an empty intersection, an empty set is returned.
-
-=cut
 
 sub find_islands {
     my $self     = shift;
@@ -1504,21 +956,6 @@ sub _find_islands_set {
     return $islands;
 }
 
-=method nearest_island
-
-    my $island = $set->nearest_island( $integer );
-    my $island = $set->nearest_island( $another_set );
-
-Returns the nearest island(s) in $set that contains, but does not overlap
-with, $integer. If $integer lies exactly between two islands, then the
-returned set contains these two islands.
-
-Returns the nearest island(s) in $set that intersects, but does not overlap
-with, $another_set. If $another_set lies exactly between two islands, then the
-returned set contains these two islands.
-
-=cut
-
 sub nearest_island {
     my $self     = shift;
     my $supplied = shift;
@@ -1552,17 +989,6 @@ sub nearest_island {
 
     return $island;
 }
-
-=method at_island
-
-    my $island = $set->at_island( $island_index );
-
-Returns the island indexed by $island_index. Islands are 1-indexed. For a set
-with N islands, the first island (ordered left-to-right) has index 1 and the
-last island has index N. If $island_index is negative, counting is done back
-from the last island (c.f. negative indexes of Perl arrays).
-
-=cut
 
 sub at_island {
     my $self  = shift;
@@ -1665,27 +1091,9 @@ sub _find_pos {
     return $low;
 }
 
-=method B<INTERFACE: Aliases>
-
-    runlist, run_list           => as_string
-
-    elements                    => as_array
-
-    size, count                 => cardinality
-
-    empty                       => is_empty
-
-    contains, contain, member   => contains_all
-
-    duplicate                   => copy
-
-    intersection                => intersect
-
-    equals                      => equal
-
-    join_span                   => fill
-
-=cut
+#----------------------------------------------------------#
+# Aliases
+#----------------------------------------------------------#
 
 sub runlist       { shift->as_string(@_); }
 sub run_list      { shift->as_string(@_); }
@@ -1704,6 +1112,18 @@ sub join_span     { shift->fill(@_); }
 1;    # Magic true value required at end of module
 
 __END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+AlignDB::IntSpan - Handling of sets containing integer spans.
+
+=head1 VERSION
+
+version 0.151200
 
 =head1 SYNOPSIS
 
@@ -1756,5 +1176,477 @@ infinity we're using):
 Many codes come from L<Set::IntSpan>, L<Set::IntSpan::Fast> and
 L<Set::IntSpan::Island>.
 
-=cut
+=head1 METHODS
 
+=head2 B<CONSTANTS>
+
+=head2 POS_INF
+
+Normally used in construction of infinite sets
+
+=head2 NEG_INF
+
+Normally used in construction of infinite sets
+
+=head2 EMPTY_STRING
+
+=head2 B<INTERFACE: Set creation>
+
+=head2 new
+
+    my $set = AlignDB::Intspan->new; # empty set
+    my $set = AlignDB::Intspan->new($set_spec); # the content of $set_spec
+    my $set = AlignDB::Intspan->new(@set_specs); # the union of @set_specs
+
+Creates and returns an AlignDB::IntSpan object.
+
+=head2 valid
+
+    my $ok = AlignDB::IntSpan->valid($run_list);
+
+Returns true if $run_list is a valid run list.
+
+=head2 clear
+
+    $set->clear;
+
+Clear all contents of $set
+
+=head2 B<INTERFACE: Set contents>
+
+=head2 edges_ref
+
+Return the internal used ArrayRef representing the set.
+
+I don't think you should use this method.
+
+=head2 edges
+
+Return the internal used Array representing the set.
+
+I don't think you should use this method.
+
+=head2 edge_size
+
+Return the number of edges
+
+=head2 span_size
+
+Return the number of spans
+
+=head2 as_string
+
+Return a string representation of the set.
+
+=head2 as_array
+
+Return an array containing all the members of the set in ascending order.
+
+=head2 B<INTERFACE: Span contents>
+
+=head2 ranges
+
+Returns the runs in $set, as a list of ($lower, $upper)
+
+=head2 spans
+
+Returns the runs in $set, as a list of [$lower, $upper]
+
+=head2 sets
+
+Returns the runs in $set, as a list of AlignDB::IntSpan objects. The sets in
+the list are in order.
+
+=head2 runlists
+
+Returns the runs in $set, as a list of "$lower-$upper"
+
+=head2 B<INTERFACE: Set cardinality>
+
+=head2 cardinality
+
+Returns the number of elements in $set.
+
+=head2 is_empty
+
+Return true if the set is empty.
+
+=head2 is_not_empty
+
+Return true if the set is not empty.
+
+=head2 is_neg_inf
+
+Return true if the set is negtive infinite.
+
+=head2 is_pos_inf
+
+Return true if the set is positive infinite.
+
+=head2 is_infinite
+
+Return true if the set is infinite.
+
+=head2 is_finite
+
+Return true if the set is finite.
+
+=head2 is_universal
+
+Return true if the set contains all integers.
+
+=head2 B<INTERFACE: Membership test>
+
+=head2 contains_all
+
+Return true if the set contains all of the specified numbers.
+
+=head2 contains_any
+
+Return true if the set contains any of the specified numbers.
+
+=head2 B<INTERFACE: Member operations>
+
+=head2 add_pair
+
+    $set->add_pair($lower, $upper);
+
+Add a pair of inclusive integers to the set.
+
+A pair of arguments constitute a range
+
+=head2 add_range
+
+    $set->add_range($lower, $upper);
+
+Add the inclusive range of integers to the set.
+
+Multiple ranges may be specified. Each pair of arguments constitute a range
+
+=head2 add_runlist
+
+    $set->add_runlist($runlist);
+
+Add the specified runlist to the set.
+
+=head2 add
+
+    $set->add($number1, $number2, $number3 ...)
+    $set->add($runlist);
+
+Add the specified integers or a runlist to the set.
+
+=head2 invert
+
+    $set = $set->invert;
+
+Complement the set.
+
+Because our notion of infinity is actually disappointingly finite inverting a
+finite set results in another finite set. For example inverting the empty set
+makes it contain all the integers between $NEG_INF and $POS_INF inclusive.
+
+As noted above $NEG_INF and $POS_INF are actually just big integers.
+
+=head2 remove_range
+
+$set->remove_range($lower, $upper);
+
+Remove the inclusive range of integers to the set.
+
+Multiple ranges may be specified. Each pair of arguments constitute a range.
+
+=head2 remove
+
+    $set->remove($number1, $number2, $number3 ...);
+    $set->remove($runlist);
+
+Remove the specified integers or a runlist to the set.
+
+=head2 merge
+
+    $set->merge($another_set);
+    $set->merge($set_spec);
+
+Merge the members of the supplied sets or set_specs into this set.
+Any number of sets may be supplied as arguments.
+
+=head2 subtract
+
+    $set->subtract($another_set);
+    $set->subtract($set_spec);
+
+Subtract the members of the supplied sets or set_specs out of this set.
+Any number of sets may be supplied as arguments.
+
+=head2 B<INTERFACE: Set operations>
+
+=head2 copy
+
+    my $new_set = $set->copy;
+
+Return an identical copy of the set.
+
+=head2 union
+
+Be called either as a method
+
+    my $new_set = $set->union( $other_set );
+
+or as a function:
+
+    my $new_set = AlignDB::IntSpan::union( $set1, $set2, $set3 );
+
+Return a new set that is the union of this set and all of the supplied sets.
+
+=head2 complement
+
+    my $new_set = $set->complement;
+
+Returns a new set that is the complement of this set.
+
+=head2 diff
+
+    my $new_set = $set->diff( $other_set );
+
+Return a set containing all the elements that are in this set but not the
+supplied set.
+
+=head2 intersect
+
+Be called either as a method
+
+    my $new_set = $set->intersect( $other_set );
+
+or as a function:
+
+    my $new_set = AlignDB::IntSpan::intersect( $set1, $set2, $set3 );
+
+Return a new set that is the intersection of this set and all the supplied
+sets.
+
+=head2 xor
+
+Be called either as a method
+
+    my $new_set = $set->xor( $other_set );
+
+or as a function:
+
+    my $new_set = AlignDB::IntSpan::xor( $set1, $set2, $set3 );
+
+Return a new set that contains all of the members that are in this set or the
+supplied set but not both.
+
+Can actually handle more than two setsin which case it returns a set that
+contains all the members that are in some of the sets but not all of the sets.
+
+=head2 B<INTERFACE: Set comparison>
+
+=head2 equal
+
+Returns true if $set and $set_spec contain the same elements.
+
+=head2 subset
+
+Returns true if $set is a subset of $set_spec.
+
+=head2 superset
+
+Returns true if $set is a superset of $set_spec.
+
+=head2 smaller_than
+
+Returns true if $set is smaller than $set_spec.
+
+=head2 larger_than
+
+Returns true if $set is larger than $set_spec.
+
+=head2 B<INTERFACE: Indexing>
+
+=head2 at
+
+Returns the indexth element of set, index start from "1".
+Negtive indices count backwards from the end of the set.
+
+=head2 lookup_back_index
+
+Give an backword index, return a element
+
+=head2 index
+
+Returns the index fo a element in the set, index start from "1"
+
+=head2 slice
+
+Give two indexes, return a subset.
+These indexes must be positive.
+
+=head2 B<INTERFACE: Extrema>
+
+=head2 min
+
+Returns the smallest element of $set, or undef if there is none.
+
+=head2 max
+
+Returns the largest element of $set, or undef if there is none.
+
+=head2 B<INTERFACE: Utils>
+
+=head2 grep_set
+
+Evaluates the $code_ref for each integer in $set (locally setting $_ to each
+integer) and returns an AlignDB::IntSpan object containing those integers for
+which the $code_ref returns TRUE.
+
+=head2 map_set
+
+Evaluates the $code_ref for each integer in $set (locally setting $_ to each
+integer) and returns an AlignDB::IntSpan object containing all the integers
+returned as results of all those evaluations.
+
+Evaluates the $code_ref in list context, so each element of $set may produce
+zero, one, or more elements in the returned set. The elements may be returned
+in any order, and need not be disjoint.
+
+=head2 substr_span
+
+    my $substring = $set->substr_span($string);
+
+=head2 B<INTERFACE: Spans operations>
+
+=head2 banish_span
+
+=head2 cover
+
+Returns a set consisting of a single span from $set->min to $set->max.
+
+=head2 holes
+
+Returns a set containing all the holes in $set, that is, all the integers that
+are in-between spans of $set.
+
+=head2 inset
+
+inset returns a set constructed by removing $n integers from each end of each
+span of $set. If $n is negative, then -$n integers are added to each end of
+each span.
+
+In the first case, spans may vanish from the set; in the second case, holes
+may vanish.
+
+=head2 trim
+
+trim is provided as a synonym for inset.
+
+=head2 pad
+
+pad $set $n is the same as $set->inset( -$n )
+
+=head2 excise
+
+    my $new_set = $set->excise( $minlength )
+
+Removes all spans within $set smaller than $minlength
+
+=head2 fill
+
+    my $new_set = $set->fill( $maxlength )
+
+Fills in all holes in $set smaller than $maxlength
+
+=head2 B<INTERFACE: Inter-set operations>
+
+=head2 overlap
+
+    my $overlap_amount = $set->overlap( $another_set );
+
+Returns the size of intersection of two sets. Equivalent to
+
+    $set->intersect( $another_set )->size;
+
+=head2 distance
+
+    my $distance = $set->distance( $another_set );
+
+Returns the distance between sets, measured as follows.
+
+If the sets overlap, then the distance is negative and given by
+
+    $d = - $set->overlap( $another_set )
+
+If the sets do not overlap, $d is positive and given by the distance on the
+integer line between the two closest islands of the sets.
+
+=head2 B<INTERFACE: Islands>
+
+=head2 find_islands
+
+    my $island = $set->find_islands( $integer );
+    my $new_set = $set->find_islands( $another_set );
+
+Returns a set containing the island in $set containing $integer.
+If $integer is not in $set, an empty set is returned.
+Returns a set containing all islands in $set intersecting $another_set.
+If $set and $another_set have an empty intersection, an empty set is returned.
+
+=head2 nearest_island
+
+    my $island = $set->nearest_island( $integer );
+    my $island = $set->nearest_island( $another_set );
+
+Returns the nearest island(s) in $set that contains, but does not overlap
+with, $integer. If $integer lies exactly between two islands, then the
+returned set contains these two islands.
+
+Returns the nearest island(s) in $set that intersects, but does not overlap
+with, $another_set. If $another_set lies exactly between two islands, then the
+returned set contains these two islands.
+
+=head2 at_island
+
+    my $island = $set->at_island( $island_index );
+
+Returns the island indexed by $island_index. Islands are 1-indexed. For a set
+with N islands, the first island (ordered left-to-right) has index 1 and the
+last island has index N. If $island_index is negative, counting is done back
+from the last island (c.f. negative indexes of Perl arrays).
+
+=head2 B<INTERFACE: Aliases>
+
+    runlist, run_list           => as_string
+
+    elements                    => as_array
+
+    size, count                 => cardinality
+
+    empty                       => is_empty
+
+    contains, contain, member   => contains_all
+
+    duplicate                   => copy
+
+    intersection                => intersect
+
+    equals                      => equal
+
+    lookup_index                => at
+
+    lookup_member               => index
+
+    join_span                   => fill
+
+=head1 AUTHOR
+
+Qiang Wang <wang-q@outlook.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2008 by Qiang Wang.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

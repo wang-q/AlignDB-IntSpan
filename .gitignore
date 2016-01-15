@@ -1,0 +1,16 @@
+/AlignDB-IntSpan-*
+
+META.yml
+Makefile
+inc/
+pm_to_blib
+*~
+blib
+/.build
+/_build_params
+/Build
+!Build/
+!META.json
+!LICENSE
+
+.komodotools
