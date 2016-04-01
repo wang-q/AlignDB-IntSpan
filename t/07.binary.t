@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::More tests => 64;
-use YAML qw(Dump Load DumpFile LoadFile);
 
 BEGIN {
     use_ok('AlignDB::IntSpan');
@@ -11,20 +10,18 @@ BEGIN {
 
 # A           B         U        I     X        A-B   B-A
 my $table = <<END_TABLE;
-  -           -         -        -     -         -     -  
- 1           1         1        1      -         -     -  
- 1           2         1-2       -    1-2        1     2  
- 3-9         1-2       1-9       -    1-9       3-9   1-2 
- 3-9         1-5       1-9      3-5   1-2,6-9   6-9   1-2 
- 3-9         4-8       3-9      4-8   3,9       3,9    -  
+  -           -         -        -     -         -     -
+ 1           1         1        1      -         -     -
+ 1           2         1-2       -    1-2        1     2
+ 3-9         1-2       1-9       -    1-9       3-9   1-2
+ 3-9         1-5       1-9      3-5   1-2,6-9   6-9   1-2
+ 3-9         4-8       3-9      4-8   3,9       3,9    -
  3-9         5-12      3-12     5-9   3-4,10-12 3-4  10-12
  3-9        10-12      3-12      -    3-12      3-9  10-12
- 1-3,5,8-11  1-6       1-6,8-11 1-3,5 4,6,8-11  8-11 4,6  
+ 1-3,5,8-11  1-6       1-6,8-11 1-3,5 4,6,8-11  8-11 4,6
 END_TABLE
 
 my @binaries = map { [ split( ' ', $_ ) ] } split /\s*\n\s*/, $table;
-
-print Dump \@binaries;
 
 # union
 {

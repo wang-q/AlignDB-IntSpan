@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::More tests => 16;
-use YAML qw(Dump Load DumpFile LoadFile);
 
 BEGIN {
     use_ok('AlignDB::IntSpan');

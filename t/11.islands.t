@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::More tests => 35;
-use YAML qw(Dump Load DumpFile LoadFile);
 use Scalar::Util qw(looks_like_number);
 
 BEGIN {

@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::More tests => 5;
-use YAML qw(Dump Load DumpFile LoadFile);
 
 BEGIN {
     use_ok('AlignDB::IntSpan');
@@ -21,7 +20,7 @@ BEGIN {
         my $set = AlignDB::IntSpan->new( $t->[0] );
         my $exp_bool = $t->[1];
         my $exp_str = $t->[2];
-        
+
         my $result_bool   = $set ? 1 : 0;
         my $result_str   = "$set";
 
@@ -32,5 +31,3 @@ BEGIN {
     }
     print "\n";
 }
-
-
