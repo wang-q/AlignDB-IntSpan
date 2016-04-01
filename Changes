@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.2  2016-04-01 08:31:59 CST
+    - Remove YAML in tests
+
 1.0.1  2016-04-01 08:23:45 CST
     - Add travis-ci
 
