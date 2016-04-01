@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.1  2016-04-01 08:23:45 CST
+    - Add travis-ci
+
 1.0.0  2016-01-15 15:12:02 CST
     - Switch to Dist::Milla
     - Use isint() from Scalar::Util::Numeric

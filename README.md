@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wang-q/AlignDB-IntSpan.svg?branch=master)](https://travis-ci.org/wang-q/AlignDB-IntSpan)
+
 # NAME
 
 AlignDB::IntSpan - Handling of sets containing integer spans.
