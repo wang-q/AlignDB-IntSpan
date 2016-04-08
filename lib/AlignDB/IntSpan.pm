@@ -1628,10 +1628,6 @@ from the last island (c.f. negative indexes of Perl arrays).
 
     equals                      => equal
 
-    lookup_index                => at
-
-    lookup_member               => index
-
     join_span                   => fill
 
 =head1 AUTHOR
