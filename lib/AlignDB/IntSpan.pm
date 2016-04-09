@@ -8,7 +8,7 @@ use Scalar::Util qw(blessed);
 use Scalar::Util::Numeric qw(isint);
 
 use overload (
-    q{0+} => sub { confess "Can't numerify an AlignDB::IntSpan\n" },
+    q{0+}   => sub { confess "Can't numerify an AlignDB::IntSpan\n" },
     q{bool} => q{is_not_empty},
     q{""}   => q{runlist},
 
@@ -87,10 +87,10 @@ sub as_string {
     }
 
     my @runs;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         push @runs, $lower == $upper ? $lower : "$lower-$upper";
     }
 
@@ -101,10 +101,10 @@ sub as_array {
     my $self = shift;
 
     my @elements;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         push @elements, ( $lower .. $upper );
     }
 
@@ -129,10 +129,10 @@ sub spans {
     my $self = shift;
 
     my @spans;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         push @spans, [ $lower, $upper ];
     }
 
@@ -143,10 +143,10 @@ sub sets {
     my $self = shift;
 
     my @sets;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         push @sets, blessed($self)->new("$lower-$upper");
     }
 
@@ -161,10 +161,10 @@ sub runlists {
     }
 
     my @runlists;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower  = shift @ranges;
-        my $upper  = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower  = shift @edges;
+        my $upper  = shift(@edges) - 1;
         my $string = $lower == $upper ? $lower : $lower . '-' . $upper;
         push @runlists, $string;
     }
@@ -176,10 +176,10 @@ sub cardinality {
     my $self = shift;
 
     my $cardinality = 0;
-    my @ranges      = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my @edges       = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         $cardinality += $upper - $lower + 1;
     }
 
@@ -522,8 +522,7 @@ sub at {
     if ( $index == 0 || abs($index) > $self->cardinality ) {
         return;
     }
-    my $member
-        = $index < 0 ? $self->_at_neg( -$index ) : $self->_at_pos($index);
+    my $member = $index < 0 ? $self->_at_neg( -$index ) : $self->_at_pos($index);
     return $member;
 }
 
@@ -534,10 +533,10 @@ sub _at_pos {
     my $member;
     my $element_before = 0;
 
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower     = shift @ranges;
-        my $upper     = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower     = shift @edges;
+        my $upper     = shift(@edges) - 1;
         my $span_size = $upper - $lower + 1;
 
         if ( $index > $element_before + $span_size ) {
@@ -559,10 +558,10 @@ sub _at_neg {
     my $member;
     my $element_after = 0;
 
-    my @r_ranges = reverse $self->ranges;
-    while (@r_ranges) {
-        my $upper     = shift @r_ranges;
-        my $lower     = shift @r_ranges;
+    my @r_edges = reverse $self->edges;
+    while (@r_edges) {
+        my $upper     = shift(@r_edges) - 1;
+        my $lower     = shift @r_edges;
         my $span_size = $upper - $lower + 1;
 
         if ( $index > $element_after + $span_size ) {
@@ -584,10 +583,10 @@ sub index {
     my $index;
     my $element_before = 0;
 
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower     = shift @ranges;
-        my $upper     = shift @ranges;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower     = shift @edges;
+        my $upper     = shift(@edges) - 1;
         my $span_size = $upper - $lower + 1;
 
         if ( $member >= $lower and $member <= $upper ) {
@@ -804,7 +803,6 @@ sub holes {
 
         # Remove infinite arms of complement set
         if ( $c_set->is_neg_inf ) {
-
             shift @ranges;
             shift @ranges;
         }
@@ -822,11 +820,11 @@ sub inset {
     my $self = shift;
     my $n    = shift;
 
-    my $inset  = blessed($self)->new;
-    my @ranges = $self->ranges;
-    while (@ranges) {
-        my $lower = shift @ranges;
-        my $upper = shift @ranges;
+    my $inset = blessed($self)->new;
+    my @edges = $self->edges;
+    while (@edges) {
+        my $lower = shift @edges;
+        my $upper = shift(@edges) - 1;
         if ( $lower != $self->NEG_INF ) {
             $lower += $n;
         }
@@ -1095,19 +1093,19 @@ sub _find_pos {
 # Aliases
 #----------------------------------------------------------#
 
-sub runlist       { shift->as_string(@_); }
-sub run_list      { shift->as_string(@_); }
-sub elements      { shift->as_array(@_); }
-sub size          { shift->cardinality(@_); }
-sub count         { shift->cardinality(@_); }
-sub empty         { shift->is_empty; }
-sub contains      { shift->contains_all(@_); }
-sub contain       { shift->contains_all(@_); }
-sub member        { shift->contains_all(@_); }
-sub duplicate     { shift->copy; }
-sub intersection  { shift->intersect(@_); }
-sub equals        { shift->equal(@_); }
-sub join_span     { shift->fill(@_); }
+sub runlist      { shift->as_string(@_); }
+sub run_list     { shift->as_string(@_); }
+sub elements     { shift->as_array(@_); }
+sub size         { shift->cardinality(@_); }
+sub count        { shift->cardinality(@_); }
+sub empty        { shift->is_empty; }
+sub contains     { shift->contains_all(@_); }
+sub contain      { shift->contains_all(@_); }
+sub member       { shift->contains_all(@_); }
+sub duplicate    { shift->copy; }
+sub intersection { shift->intersect(@_); }
+sub equals       { shift->equal(@_); }
+sub join_span    { shift->fill(@_); }
 
 1;    # Magic true value required at end of module
 
