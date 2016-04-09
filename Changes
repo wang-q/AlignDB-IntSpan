@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.4  2016-04-10 04:16:07 CST
+    - Reduce internally using ranges()
+
 1.0.3  2016-04-08 14:45:12 CST
     - Clean PODs
 
