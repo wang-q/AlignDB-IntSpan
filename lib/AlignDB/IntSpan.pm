@@ -389,7 +389,7 @@ sub remove {
 sub merge {
     my $self = shift;
 
-    foreach my $supplied (@_) {
+    for my $supplied (@_) {
         my @ranges = $self->_real_set($supplied)->ranges;
         $self->add_range(@ranges);
     }
@@ -399,8 +399,9 @@ sub merge {
 
 sub subtract {
     my $self = shift;
+    return $self if $self->is_empty;
 
-    foreach my $supplied (@_) {
+    for my $supplied (@_) {
         my @ranges = $self->_real_set($supplied)->ranges;
         $self->remove_range(@ranges);
     }
@@ -438,6 +439,8 @@ sub complement {
 sub diff {
     my $self = shift;
 
+    return $self if $self->is_empty;
+
     my $new = $self->copy;
     $new->subtract(@_);
 
@@ -446,6 +449,8 @@ sub diff {
 
 sub intersect {
     my $self = shift;
+
+    return $self if $self->is_empty;
 
     my $new = $self->complement;
     for my $supplied (@_) {
@@ -731,7 +736,7 @@ sub map_set {
 
     my @map_elements;
     for ( $self->elements ) {
-        foreach my $element ( $code_ref->() ) {
+        for my $element ( $code_ref->() ) {
             if ( defined $element ) {
                 push @map_elements, $element;
             }
@@ -750,7 +755,7 @@ sub substr_span {
     my $sub_string = "";
     my @spans      = $self->spans;
 
-    foreach (@spans) {
+    for (@spans) {
         my ( $lower, $upper ) = @$_;
         my $length = $upper - $lower + 1;
 
