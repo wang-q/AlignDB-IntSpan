@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.5  2016-04-12 04:05:26 CST
+    - Shortcuts for empty sets
+
 1.0.4  2016-04-10 04:16:07 CST
     - Reduce internally using ranges()
 
