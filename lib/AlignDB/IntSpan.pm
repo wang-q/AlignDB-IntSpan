@@ -1469,10 +1469,6 @@ Returns true if $set is larger than $set_spec.
 Returns the indexth element of set, index start from "1".
 Negtive indices count backwards from the end of the set.
 
-=head2 lookup_back_index
-
-Give an backword index, return a element
-
 =head2 index
 
 Returns the index fo a element in the set, index start from "1"
