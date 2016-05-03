@@ -349,10 +349,6 @@ Returns true if $set is larger than $set\_spec.
 Returns the indexth element of set, index start from "1".
 Negtive indices count backwards from the end of the set.
 
-## lookup\_back\_index
-
-Give an backword index, return a element
-
 ## index
 
 Returns the index fo a element in the set, index start from "1"
@@ -510,8 +506,6 @@ from the last island (c.f. negative indexes of Perl arrays).
     intersection                => intersect
 
     equals                      => equal
-
-    join_span                   => fill
 
 # AUTHOR
 
