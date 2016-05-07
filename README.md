@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/wang-q/AlignDB-IntSpan.svg?branch=master)](https://travis-ci.org/wang-q/AlignDB-IntSpan)
+[![Cpan version](https://img.shields.io/cpan/v/AlignDB-IntSpan.svg)](https://metacpan.org/release/AlignDB-IntSpan)
 
 # NAME
 
