@@ -409,6 +409,7 @@ sub subtract {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub copy {
     my $self = shift;
 
@@ -418,6 +419,7 @@ sub copy {
     return $copy;
 }
 
+#@returns AlignDB::IntSpan
 sub union {
     my $self = shift;
 
@@ -427,6 +429,7 @@ sub union {
     return $new;
 }
 
+#@returns AlignDB::IntSpan
 sub complement {
     my $self = shift;
 
@@ -436,6 +439,7 @@ sub complement {
     return $new;
 }
 
+#@returns AlignDB::IntSpan
 sub diff {
     my $self = shift;
 
@@ -447,6 +451,7 @@ sub diff {
     return $new;
 }
 
+#@returns AlignDB::IntSpan
 sub intersect {
     my $self = shift;
 
@@ -462,6 +467,8 @@ sub intersect {
     return $new;
 }
 
+#@method
+#@returns AlignDB::IntSpan
 sub xor {
     return intersect( union(@_), intersect(@_)->complement );
 }
@@ -606,6 +613,7 @@ sub index {
     return $index;
 }
 
+#@returns AlignDB::IntSpan
 sub slice {
     my $self = shift;
     my $from = shift;
