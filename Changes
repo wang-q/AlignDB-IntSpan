@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.6  2016-05-07 16:17:52 CST
+    - Travis CI
+
 1.0.5  2016-04-12 04:05:26 CST
     - Shortcuts for empty sets
 
