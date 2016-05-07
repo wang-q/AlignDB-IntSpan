@@ -918,6 +918,7 @@ sub distance {
     return $min_d;
 }
 
+#@returns AlignDB::IntSpan
 sub find_islands {
     my $self     = shift;
     my $supplied = shift;
@@ -967,6 +968,7 @@ sub _find_islands_set {
     return $islands;
 }
 
+#@returns AlignDB::IntSpan
 sub nearest_island {
     my $self     = shift;
     my $supplied = shift;
