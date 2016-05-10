@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.0.7  2016-05-10 19:14:21 CST
+    - For empty sets, spans(), sets() and runlists() returns nothing.
+
 1.0.6  2016-05-07 16:17:52 CST
     - Travis CI
 
