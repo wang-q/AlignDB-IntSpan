@@ -136,7 +136,12 @@ sub spans {
         push @spans, [ $lower, $upper ];
     }
 
-    return @spans;
+    if (@spans) {
+        return @spans;
+    }
+    else {
+        return;
+    }
 }
 
 sub sets {
@@ -150,7 +155,12 @@ sub sets {
         push @sets, blessed($self)->new("$lower-$upper");
     }
 
-    return @sets;
+    if (@sets) {
+        return @sets;
+    }
+    else {
+        return;
+    }
 }
 
 sub runlists {
@@ -169,7 +179,12 @@ sub runlists {
         push @runlists, $string;
     }
 
-    return @runlists;
+    if (@runlists) {
+        return @runlists;
+    }
+    else {
+        return;
+    }
 }
 
 sub cardinality {
