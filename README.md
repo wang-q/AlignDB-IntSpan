@@ -499,8 +499,6 @@ from the last island (c.f. negative indexes of Perl arrays).
 
     size, count                 => cardinality
 
-    empty                       => is_empty
-
     contains, contain, member   => contains_all
 
     duplicate                   => copy

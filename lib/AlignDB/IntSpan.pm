@@ -1137,7 +1137,6 @@ sub runlist      { shift->as_string(@_); }
 sub elements     { shift->as_array(@_); }
 sub size         { shift->cardinality(@_); }
 sub count        { shift->cardinality(@_); }
-sub empty        { shift->is_empty; }
 sub contains     { shift->contains_all(@_); }
 sub contain      { shift->contains_all(@_); }
 sub member       { shift->contains_all(@_); }
@@ -1649,8 +1648,6 @@ from the last island (c.f. negative indexes of Perl arrays).
     elements                    => as_array
 
     size, count                 => cardinality
-
-    empty                       => is_empty
 
     contains, contain, member   => contains_all
 
