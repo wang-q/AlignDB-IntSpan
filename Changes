@@ -2,6 +2,12 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.1.0  2016-12-11 07:42:50 CST
+    - Add codecov badge
+    - Remove run_list(), empty(), contain(), member() and duplicate() as aliases
+    - Add tests for errors
+    - Add tests for banish_span() and substr_span()
+
 1.0.7  2016-05-10 19:14:21 CST
     - For empty sets, spans(), sets() and runlists() returns nothing.
 
