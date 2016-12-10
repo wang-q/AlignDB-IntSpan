@@ -1,19 +1,16 @@
-#!/usr/bin/perl
 use strict;
 use warnings;
 
-use Test::More tests => 35;
+use Test::More;
 
-BEGIN {
-    use_ok('AlignDB::IntSpan');
-}
+use AlignDB::IntSpan;
 
 {
     srand( time ^ $$ );
-    my @sets = map { (AlignDB::IntSpan->new) } ( 1 .. 7 );
+    my @sets = map { ( AlignDB::IntSpan->new ) } ( 1 .. 7 );
 
     my @members = ();
-    my $next = int( rand(100) );
+    my $next    = int( rand(100) );
     for ( 1 .. 100 ) {
         push @members, ($next);
 
@@ -106,12 +103,12 @@ BEGIN {
 
     $sets[0]->add(11);
     ok( $sets[0]->superset( $sets[1] ), 'superset bigger' );
-    ok( !$sets[0]->subset( $sets[1] ), 'subset bigger' );
+    ok( !$sets[0]->subset( $sets[1] ),  'subset bigger' );
 }
 
 {
     my @sets = map { AlignDB::IntSpan->new(); } ( 1 .. 3 );
-    ok( $sets[0]->equals( $sets[1] ), 'empty sets equal' );
+    ok( $sets[0]->equals( $sets[1] ),        'empty sets equal' );
     ok( $sets[0]->equals( @sets[ 1 .. 2 ] ), 'three empty sets equal' );
     $sets[0]->add(0);
     ok( !$sets[0]->equals( $sets[1] ),        'sets not equal' );
@@ -145,3 +142,5 @@ BEGIN {
     $set->add_range( -3, 3 );
     ok( $set->contains_any( -4, 0 ), 'range contains_any' );
 }
+
+done_testing(34);
