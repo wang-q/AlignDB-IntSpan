@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/wang-q/AlignDB-IntSpan.svg?branch=master)](https://travis-ci.org/wang-q/AlignDB-IntSpan)
+[![codecov](https://codecov.io/gh/wang-q/AlignDB-IntSpan/branch/master/graph/badge.svg)](https://codecov.io/gh/wang-q/AlignDB-IntSpan)
 [![Cpan version](https://img.shields.io/cpan/v/AlignDB-IntSpan.svg)](https://metacpan.org/release/AlignDB-IntSpan)
 
 # NAME
@@ -82,9 +83,9 @@ Creates and returns an AlignDB::IntSpan object.
 
 ## valid
 
-    my $ok = AlignDB::IntSpan->valid($run_list);
+    my $ok = AlignDB::IntSpan->valid($runlist);
 
-Returns true if $run\_list is a valid run list.
+Returns true if $runlist is a valid run list.
 
 ## clear
 
@@ -492,7 +493,7 @@ from the last island (c.f. negative indexes of Perl arrays).
 
 ## **INTERFACE: Aliases**
 
-    runlist, run_list           => as_string
+    runlist                     => as_string
 
     elements                    => as_array
 

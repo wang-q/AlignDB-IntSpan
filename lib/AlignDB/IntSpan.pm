@@ -10,7 +10,7 @@ use Scalar::Util::Numeric qw(isint);
 use overload (
     q{0+}   => sub { confess "Can't numerify an AlignDB::IntSpan\n" },
     q{bool} => q{is_not_empty},
-    q{""}   => q{runlist},
+    q{""}   => q{as_string},
 
     # use Perl standard behaviours for other operations
     fallback => 1,
@@ -648,8 +648,10 @@ sub _splice {
     my $offset = shift;
     my $length = shift;
 
-    my @edges = $self->edges;
+    #@type AlignDB::IntSpan
     my $slice = blessed($self)->new;
+
+    my @edges = $self->edges;
 
     while ( @edges > 1 ) {
         my ( $lower, $upper ) = @edges[ 0, 1 ];
@@ -788,6 +790,7 @@ sub substr_span {
     return $sub_string;
 }
 
+#@returns AlignDB::IntSpan
 sub banish_span {
     my $self  = shift;
     my $start = shift;
@@ -806,6 +809,7 @@ sub banish_span {
     return $new;
 }
 
+#@returns AlignDB::IntSpan
 sub cover {
     my $self = shift;
 
@@ -816,6 +820,7 @@ sub cover {
     return $cover;
 }
 
+#@returns AlignDB::IntSpan
 sub holes {
     my $self = shift;
 
@@ -844,6 +849,7 @@ sub holes {
     return $holes;
 }
 
+#@returns AlignDB::IntSpan
 sub inset {
     my $self = shift;
     my $n    = shift;
@@ -866,18 +872,21 @@ sub inset {
     return $inset;
 }
 
+#@returns AlignDB::IntSpan
 sub trim {
     my $self = shift;
     my $n    = shift;
     return $self->inset($n);
 }
 
+#@returns AlignDB::IntSpan
 sub pad {
     my $self = shift;
     my $n    = shift;
     return $self->inset( -$n );
 }
 
+#@returns AlignDB::IntSpan
 sub excise {
     my $self      = shift;
     my $minlength = shift;
@@ -888,6 +897,7 @@ sub excise {
     return $set;
 }
 
+#@returns AlignDB::IntSpan
 sub fill {
     my $self      = shift;
     my $maxlength = shift;
@@ -1124,7 +1134,6 @@ sub _find_pos {
 #----------------------------------------------------------#
 
 sub runlist      { shift->as_string(@_); }
-sub run_list     { shift->as_string(@_); }
 sub elements     { shift->as_array(@_); }
 sub size         { shift->cardinality(@_); }
 sub count        { shift->cardinality(@_); }
@@ -1225,9 +1234,9 @@ Creates and returns an AlignDB::IntSpan object.
 
 =head2 valid
 
-    my $ok = AlignDB::IntSpan->valid($run_list);
+    my $ok = AlignDB::IntSpan->valid($runlist);
 
-Returns true if $run_list is a valid run list.
+Returns true if $runlist is a valid run list.
 
 =head2 clear
 
@@ -1635,7 +1644,7 @@ from the last island (c.f. negative indexes of Perl arrays).
 
 =head2 B<INTERFACE: Aliases>
 
-    runlist, run_list           => as_string
+    runlist                     => as_string
 
     elements                    => as_array
 
