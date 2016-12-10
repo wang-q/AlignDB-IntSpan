@@ -2,11 +2,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 46;
+use Test::More;
 
-BEGIN {
-    use_ok('AlignDB::IntSpan');
-}
+use AlignDB::IntSpan;
 
 my $pos = AlignDB::IntSpan->new->POS_INF;
 my $neg = AlignDB::IntSpan->new->NEG_INF;
@@ -94,8 +92,7 @@ my $neg = AlignDB::IntSpan->new->NEG_INF;
         my $expected = AlignDB::IntSpan->new( $t->[2] );
         my $result   = $set->inset($n);
 
-        printf "#%-12s %-12s %d -> %s\n", 'inset', $set->runlist, $n,
-            $result->runlist;
+        printf "#%-12s %-12s %d -> %s\n", 'inset', $set->runlist, $n, $result->runlist;
         my $test_name = "inset|$count";
         ok( $result->equal($expected), $test_name );
         $count++;
@@ -125,8 +122,7 @@ my $neg = AlignDB::IntSpan->new->NEG_INF;
         my $expected = AlignDB::IntSpan->new( $t->[2] );
         my $result   = $set->excise($n);
 
-        printf "#%-12s %-12s %d -> %s\n", 'excise', $set->runlist, $n,
-            $result->runlist;
+        printf "#%-12s %-12s %d -> %s\n", 'excise', $set->runlist, $n, $result->runlist;
         my $test_name = "excise|$count";
         ok( $result->equal($expected), $test_name );
         $count++;
@@ -153,10 +149,11 @@ my $neg = AlignDB::IntSpan->new->NEG_INF;
         my $expected = AlignDB::IntSpan->new( $t->[2] );
         my $result   = $set->fill($n);
 
-        printf "#%-12s %-12s %d -> %s\n", 'fill', $set->runlist, $n,
-            $result->runlist;
+        printf "#%-12s %-12s %d -> %s\n", 'fill', $set->runlist, $n, $result->runlist;
         my $test_name = "fill|$count";
         ok( $result->equal($expected), $test_name );
         $count++;
     }
 }
+
+done_testing(45);

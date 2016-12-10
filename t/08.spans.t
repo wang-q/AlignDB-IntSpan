@@ -2,11 +2,9 @@
 use strict;
 use warnings;
 
-use Test::More tests => 77;
+use Test::More;
 
-BEGIN {
-    use_ok('AlignDB::IntSpan');
-}
+use AlignDB::IntSpan;
 
 my $pos = AlignDB::IntSpan->new->POS_INF;
 my $neg = AlignDB::IntSpan->new->NEG_INF;
@@ -94,3 +92,5 @@ my @tests = (
         $count++;
     }
 }
+
+done_testing(76);
