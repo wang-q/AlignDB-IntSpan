@@ -493,19 +493,17 @@ from the last island (c.f. negative indexes of Perl arrays).
 
 ## **INTERFACE: Aliases**
 
-    runlist                     => as_string
+    runlist         => as_string
 
-    elements                    => as_array
+    elements        => as_array
 
-    size, count                 => cardinality
+    size, count     => cardinality
 
-    contains, contain, member   => contains_all
+    contains        => contains_all
 
-    duplicate                   => copy
+    intersection    => intersect
 
-    intersection                => intersect
-
-    equals                      => equal
+    equals          => equal
 
 # AUTHOR
 
