@@ -12,7 +12,7 @@ use AlignDB::IntSpan;
     ok( !$inf_set->is_finite,  "is_finite" );
     ok( $inf_set->is_infinite, "is_infinite" );
     ok( $inf_set->is_neg_inf,  "is_neg_inf" );
-    ok( $inf_set->is_pos_inf ), "is_pos_inf";
+    ok( $inf_set->is_pos_inf,  "is_pos_inf" );
 }
 
 my $sets = [ split( ' ', q{ - 1 5 1-5 3-7 1-3,8,10-23 } ) ];

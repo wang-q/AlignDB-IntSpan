@@ -3,12 +3,11 @@ use strict;
 use warnings;
 
 use Carp;
-use Readonly;
-use Scalar::Util qw(blessed);
-use Scalar::Util::Numeric qw(isint);
+use Scalar::Util;
+use Scalar::Util::Numeric;
 
 use overload (
-    q{0+}   => sub { confess "Can't numerify an AlignDB::IntSpan\n" },
+    q{0+}   => sub { Carp::confess "Can't numerify an AlignDB::IntSpan\n" },
     q{bool} => q{is_not_empty},
     q{""}   => q{as_string},
 
@@ -18,8 +17,8 @@ use overload (
 
 our $VERSION = '1.1.0';
 
-Readonly my $POS_INF => 2_147_483_647 - 1;             # INT_MAX - 1
-Readonly my $NEG_INF => ( -2_147_483_647 - 1 ) + 1;    # INT_MIN + 1
+my $POS_INF = 2_147_483_647 - 1;             # INT_MAX - 1
+my $NEG_INF = ( -2_147_483_647 - 1 ) + 1;    # INT_MIN + 1
 
 sub POS_INF {
     return $POS_INF - 1;
@@ -152,7 +151,7 @@ sub sets {
     while (@edges) {
         my $lower = shift @edges;
         my $upper = shift(@edges) - 1;
-        push @sets, blessed($self)->new("$lower-$upper");
+        push @sets, Scalar::Util::blessed($self)->new("$lower-$upper");
     }
 
     if (@sets) {
@@ -259,12 +258,13 @@ sub contains_any {
     return 0;
 }
 
+#@returns AlignDB::IntSpan
 sub add_pair {
     my $self   = shift;
     my @ranges = @_;
 
     if ( scalar(@ranges) != 2 ) {
-        confess "Number of ranges must be two: @ranges\n";
+        Carp::confess "Number of ranges must be two: @ranges\n";
     }
 
     my $edges_ref = $self->edges_ref;
@@ -272,7 +272,7 @@ sub add_pair {
     my $from = shift @ranges;
     my $to   = shift(@ranges) + 1;
     if ( $from > $to ) {
-        confess "Bad order: $from-$to\n";
+        Carp::confess "Bad order: $from-$to\n";
     }
     my $from_pos = $self->_find_pos( $from,   0 );
     my $to_pos   = $self->_find_pos( $to + 1, $from_pos );
@@ -289,12 +289,13 @@ sub add_pair {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub add_range {
     my $self   = shift;
     my @ranges = @_;
 
     if ( scalar(@ranges) % 2 == 1 ) {
-        confess "Number of ranges must be even: @ranges\n";
+        Carp::confess "Number of ranges must be even: @ranges\n";
     }
 
     while (@ranges) {
@@ -306,6 +307,7 @@ sub add_range {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub add_runlist {
     my $self  = shift;
     my $first = shift;
@@ -315,6 +317,7 @@ sub add_runlist {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub add {
     my $self  = shift;
     my $first = shift;
@@ -322,7 +325,7 @@ sub add {
     if ( ref $first eq __PACKAGE__ ) {
         $self->add_range( $first->ranges );
     }
-    elsif ( isint($first) ) {
+    elsif ( Scalar::Util::Numeric::isint($first) ) {
         if ( scalar @_ > 0 ) {
             $self->add_range( $self->_list_to_ranges( $first, @_ ) );
         }
@@ -337,6 +340,7 @@ sub add {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub invert {
     my $self = shift;
 
@@ -369,6 +373,7 @@ sub invert {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub remove_range {
     my $self = shift;
 
@@ -379,6 +384,7 @@ sub remove_range {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub remove {
     my $self  = shift;
     my $first = shift;
@@ -386,7 +392,7 @@ sub remove {
     if ( ref $first eq __PACKAGE__ ) {
         $self->remove_range( $first->ranges );
     }
-    elsif ( isint($first) ) {
+    elsif ( Scalar::Util::Numeric::isint($first) ) {
         if ( scalar @_ > 0 ) {
             $self->remove_range( $self->_list_to_ranges( $first, @_ ) );
         }
@@ -401,6 +407,7 @@ sub remove {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub merge {
     my $self = shift;
 
@@ -412,6 +419,7 @@ sub merge {
     return $self;
 }
 
+#@returns AlignDB::IntSpan
 sub subtract {
     my $self = shift;
     return $self if $self->is_empty;
@@ -428,7 +436,7 @@ sub subtract {
 sub copy {
     my $self = shift;
 
-    my $copy = blessed($self)->new;
+    my $copy = Scalar::Util::blessed($self)->new;
     $copy->{edges} = [ $self->edges ];
 
     return $copy;
@@ -649,7 +657,7 @@ sub _splice {
     my $length = shift;
 
     #@type AlignDB::IntSpan
-    my $slice = blessed($self)->new;
+    my $slice = Scalar::Util::blessed($self)->new;
 
     my @edges = $self->edges;
 
@@ -750,7 +758,7 @@ sub grep_set {
         }
 
     }
-    my $sub_set = blessed($self)->new(@sub_elements);
+    my $sub_set = Scalar::Util::blessed($self)->new(@sub_elements);
 
     return $sub_set;
 }
@@ -768,7 +776,7 @@ sub map_set {
         }
 
     }
-    my $map_set = blessed($self)->new(@map_elements);
+    my $map_set = Scalar::Util::blessed($self)->new(@map_elements);
 
     return $map_set;
 }
@@ -813,7 +821,7 @@ sub banish_span {
 sub cover {
     my $self = shift;
 
-    my $cover = blessed($self)->new;
+    my $cover = Scalar::Util::blessed($self)->new;
     if ( $self->is_not_empty ) {
         $cover->add_pair( $self->min, $self->max );
     }
@@ -824,7 +832,7 @@ sub cover {
 sub holes {
     my $self = shift;
 
-    my $holes = blessed($self)->new;
+    my $holes = Scalar::Util::blessed($self)->new;
 
     if ( $self->is_empty or $self->is_universal ) {
 
@@ -854,7 +862,7 @@ sub inset {
     my $self = shift;
     my $n    = shift;
 
-    my $inset = blessed($self)->new;
+    my $inset = Scalar::Util::blessed($self)->new;
     my @edges = $self->edges;
     while (@edges) {
         my $lower = shift @edges;
@@ -891,7 +899,7 @@ sub excise {
     my $self      = shift;
     my $minlength = shift;
 
-    my $set = blessed($self)->new;
+    my $set = Scalar::Util::blessed($self)->new;
     map { $set->merge($_) } grep { $_->size >= $minlength } $self->sets;
 
     return $set;
@@ -952,11 +960,11 @@ sub find_islands {
     if ( ref $supplied eq __PACKAGE__ ) {
         $island = $self->_find_islands_set($supplied);
     }
-    elsif ( isint($supplied) ) {
+    elsif ( Scalar::Util::Numeric::isint($supplied) ) {
         $island = $self->_find_islands_int($supplied);
     }
     else {
-        confess "Don't know how to deal with input to find_island\n";
+        Carp::confess "Don't know how to deal with input to find_island\n";
     }
 
     return $island;
@@ -966,7 +974,7 @@ sub _find_islands_int {
     my $self   = shift;
     my $number = shift;
 
-    my $island = blessed($self)->new;
+    my $island = Scalar::Util::blessed($self)->new;
 
     # if $pos & 1, i.e. $pos is odd number, $val is in the set
     my $pos = $self->_find_pos( $number + 1, 0 );
@@ -982,7 +990,7 @@ sub _find_islands_set {
     my $self     = shift;
     my $supplied = shift;
 
-    my $islands = blessed($self)->new;
+    my $islands = Scalar::Util::blessed($self)->new;
 
     if ( $self->overlap($supplied) ) {
         for my $subset ( $self->sets ) {
@@ -1000,14 +1008,14 @@ sub nearest_island {
 
     if ( ref $supplied eq __PACKAGE__ ) {    # just OK
     }
-    elsif ( isint($supplied) ) {
-        $supplied = blessed($self)->new($supplied);
+    elsif ( Scalar::Util::Numeric::isint($supplied) ) {
+        $supplied = Scalar::Util::blessed($self)->new($supplied);
     }
     else {
-        confess "Don't know how to deal with input to nearest_island\n";
+        Carp::confess "Don't know how to deal with input to nearest_island\n";
     }
 
-    my $island = blessed($self)->new;
+    my $island = Scalar::Util::blessed($self)->new;
     my $min_d;
     for my $s ( $self->sets ) {
         for my $ss ( $supplied->sets ) {
@@ -1075,11 +1083,11 @@ sub _runlist_to_ranges {
             push @ranges, ( $1, $1 );
         }
         elsif ( $run =~ /^ (-?\d+) - (-?\d+) $/x ) {
-            confess "Bad order: $runlist\n" if $1 > $2;
+            Carp::confess "Bad order: $runlist\n" if $1 > $2;
             push @ranges, ( $1, $2 );
         }
         else {
-            confess "Bad syntax: $runlist\n";
+            Carp::confess "Bad syntax: $runlist\n";
         }
     }
 
@@ -1095,7 +1103,7 @@ sub _real_set {
         return $supplied;
     }
     else {
-        return blessed($self)->new($supplied);
+        return Scalar::Util::blessed($self)->new($supplied);
     }
 }
 

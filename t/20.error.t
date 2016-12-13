@@ -31,7 +31,7 @@ use AlignDB::IntSpan;
 
         my $valid = AlignDB::IntSpan->valid($runlist);
         printf "# AlignDB::IntSpan->valid( %s ) -> %s", $runlist, $@;
-        ok( $valid or $@ !~ qr{$expected}, "error-valid $count" );
+        ok( $valid or ( $@ !~ qr{$expected} ), "error-valid $count" );
 
         $count++;
     }
