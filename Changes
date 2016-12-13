@@ -2,6 +2,9 @@ Revision history for AlignDB-IntSpan
 
 {{ $NEXT }}
 
+1.1.1  2016-12-14 02:10:08 CST
+    - Cleanup namespaces
+
 1.1.0  2016-12-11 07:42:50 CST
     - Add codecov badge
     - Remove run_list(), empty(), contain(), member() and duplicate() as aliases

@@ -15,7 +15,7 @@ use overload (
     fallback => 1,
 );
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.1.1';
 
 my $POS_INF = 2_147_483_647 - 1;             # INT_MAX - 1
 my $NEG_INF = ( -2_147_483_647 - 1 ) + 1;    # INT_MIN + 1
