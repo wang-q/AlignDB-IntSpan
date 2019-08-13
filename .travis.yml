@@ -1,3 +1,6 @@
+dist: trusty
+sudo: false
+
 language: perl
 perl:
   - "5.22"
@@ -8,9 +11,9 @@ perl:
   - "5.12"
   - "5.10"
   - "5.8"
+
 install:
   - cpanm -nq --installdeps --with-develop .
-sudo: false
 before_script:
   - cpanm --quiet --notest --skip-satisfied Devel::Cover Devel::Cover::Report::Codecov
 script:
