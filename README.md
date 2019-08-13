@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.org/wang-q/AlignDB-IntSpan.svg?branch=master)](https://travis-ci.org/wang-q/AlignDB-IntSpan)
-[![codecov](https://codecov.io/gh/wang-q/AlignDB-IntSpan/branch/master/graph/badge.svg)](https://codecov.io/gh/wang-q/AlignDB-IntSpan)
-[![Cpan version](https://img.shields.io/cpan/v/AlignDB-IntSpan.svg)](https://metacpan.org/release/AlignDB-IntSpan)
-
+[![Build Status](https://travis-ci.org/wang-q/AlignDB-IntSpan.svg?branch=master)](https://travis-ci.org/wang-q/AlignDB-IntSpan) [![Coverage Status](http://codecov.io/github/wang-q/AlignDB-IntSpan/coverage.svg?branch=master)](https://codecov.io/github/wang-q/AlignDB-IntSpan?branch=master) [![MetaCPAN Release](https://badge.fury.io/pl/AlignDB-IntSpan.svg)](https://metacpan.org/release/AlignDB-IntSpan)
 # NAME
 
 AlignDB::IntSpan - Handling of sets containing integer spans.
@@ -507,7 +504,7 @@ from the last island (c.f. negative indexes of Perl arrays).
 
 # AUTHOR
 
-Qiang Wang &lt;wang-q@outlook.com>
+Qiang Wang <wang-q@outlook.com>
 
 # COPYRIGHT AND LICENSE
 

@@ -1,0 +1,5 @@
+name = "AlignDB-IntSpan"
+badges = ['travis', 'codecov', 'metacpan']
+authority="cpan:WANGQ"
+
+module_maker="ModuleBuildTiny"
